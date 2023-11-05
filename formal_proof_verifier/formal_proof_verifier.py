@@ -263,37 +263,72 @@ def tokenize(formula_str: str) -> list[Union[str, FormulaType]]:
 
     return tokens
 
+def group_tokens(tokens: List[Union[str, FormulaType]]) -> List[Union[List[str], FormulaType]]:
+    grouped_tokens: List[Union[List[str], FormulaType]] = []
+    current_str_group: Optional[List[str]] = None
+    for token in tokens:
+        if isinstance(token, FormulaType):
+            if current_str_group is not None:
+                grouped_tokens.append(current_str_group)
+                current_str_group = None
+            grouped_tokens.append(token)
+        else:
+            if current_str_group is None:
+                current_str_group = []
+            current_str_group.append(token)
+
+    if current_str_group is not None:
+        grouped_tokens.append(current_str_group)
+
+    return grouped_tokens
+
+def create_constituents(
+    grouped_tokens: List[Union[List[str], FormulaType]],
+    reserved_variables: List[str]
+) -> List[Union[Formula, FormulaType]]:
+    constituents: List[Union[Formula, FormulaType]] = []
+
+    for grouped_token in grouped_tokens:
+        if isinstance(grouped_token, FormulaType):
+            constituents.append(grouped_token)
+        else:
+            if len(grouped_token) == 1:
+                constituents.append(
+                    _create_formula(grouped_token[0], reserved_variables)
+                )
+            elif len(grouped_token) == 2:
+                constituents.append(Formula(
+                    type=FormulaType.predicate_type,
+                    predicate=grouped_token[0],
+                    variables=grouped_token[1].split(",")
+                ))
+            elif len(grouped_token) == 3:
+                variable_left: str = grouped_token[0]
+                predicate: str = grouped_token[1]
+                variable_right: str = grouped_token[2]
+
+                constituents.append(Formula(
+                    type=FormulaType.predicate_type,
+                    predicate=predicate,
+                    variables=[variable_left, variable_right]
+                ))
+            else:
+                raise RuntimeError(
+                    f"Error: formula has more than 3 tokens "
+                    f"next to each other without any connective: "
+                    f"'{grouped_token}'."
+                )
+
+    return constituents
+
 def create_unquantified_formula(
     tokens: List[Union[str, FormulaType]],
     reserved_variables: List[str]
 ) -> Formula:
-    constituents: List[Union[Formula, FormulaType]] = []
-    previous_unprocessed_str_token: Optional[str] = None
-    for token in tokens:
-        if previous_unprocessed_str_token is not None:
-            if isinstance(token, str):
-                constituents.append(Formula(
-                    type=FormulaType.predicate_type,
-                    predicate=previous_unprocessed_str_token,
-                    variables=token.split(",")
-                ))
-            else:
-                constituents.append(
-                    _create_formula(
-                        previous_unprocessed_str_token,
-                        reserved_variables
-                    )
-                )
-            previous_unprocessed_str_token = None
-        else:
-            if isinstance(token, str):
-                previous_unprocessed_str_token = token
-        if not isinstance(token, str):
-            constituents.append(token)
-    if previous_unprocessed_str_token is not None:
-        constituents.append(
-            _create_formula(previous_unprocessed_str_token, reserved_variables)
-        )
+    grouped_tokens: List[Union[List[str], FormulaType]] = group_tokens(tokens)
+    constituents: List[Union[Formula, FormulaType]] = (
+        create_constituents(grouped_tokens, reserved_variables)
+    )
 
     biconnectives = {
         FormulaType.and_type,
