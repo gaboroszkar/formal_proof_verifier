@@ -636,3 +636,72 @@ def test_modus_ponens_rule():
         1,2 3 P   MP 1,2
     """
     assert _map_is_valid(text) == [True, True, False]
+
+def test_double_negation_introduction_rule():
+    # Valid use of the rule.
+    text: str = """
+        1 1 (P&Q)v(R>S)       P
+        1 2 ~(~((P&Q)v(R>S))) DNI 1
+    """
+    assert _map_is_valid(text) == [True, True]
+
+    # Missing line numbers for the rule.
+    text: str = """
+        1 1 (P&Q)v(R>S)       P
+        1 2 ~(~((P&Q)v(R>S))) DNI
+    """
+    with pytest.raises(RuntimeError):
+        create_lines_from_text(text)
+
+    # Too many line numbers for the rule.
+    text: str = """
+        1 1 (P&Q)v(R>S)       P
+        2 2 (P&Q)v(R>S)       P
+        1 3 ~(~((P&Q)v(R>S))) DNI 1,2
+    """
+    with pytest.raises(RuntimeError):
+        create_lines_from_text(text)
+
+    # Missing dependency number.
+    text: str = """
+        1 1 (P&Q)v(R>S)       P
+        2 2 P                 P
+        2 3 ~(~((P&Q)v(R>S))) DNI 1
+    """
+    assert _map_is_valid(text) == [True, True, False]
+
+    # Extra invalid dependency number.
+    text: str = """
+        1   1 (P&Q)v(R>S)       P
+        2   2 P                 P
+        1,2 3 ~(~((P&Q)v(R>S))) DNI 1
+    """
+    assert _map_is_valid(text) == [True, True, False]
+
+    # Extra invalid dependency number.
+    text: str = """
+        1 1 (P&Q)v(R>S)    P
+        1 2 ~((P&Q)v(R>S)) DNI 1
+    """
+    assert _map_is_valid(text) == [True, False]
+
+    # Incorrect connective.
+    text: str = """
+        1 1 (P&Q)v(R>S)    P
+        1 2 (P&Q)v(R>S) DNI 1
+    """
+    assert _map_is_valid(text) == [True, False]
+
+    # Incorrect inner connective.
+    text: str = """
+        1 1 (P&Q)v(R>S)    P
+        1 2 ~((P&Q)v(R>S)) DNI 1
+    """
+    assert _map_is_valid(text) == [True, False]
+
+    # Inner formula is not the same as the first rule line.
+    text: str = """
+        1 1 (P&Q)v(R>S)       P
+        1 2 ~(~((P&P)v(R>S))) DNI 1
+    """
+    assert _map_is_valid(text) == [True, False]
