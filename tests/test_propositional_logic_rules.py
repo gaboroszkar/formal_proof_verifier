@@ -678,16 +678,9 @@ def test_double_negation_introduction_rule():
     """
     assert _map_is_valid(text) == [True, True, False]
 
-    # Extra invalid dependency number.
-    text: str = """
-        1 1 (P&Q)v(R>S)    P
-        1 2 ~((P&Q)v(R>S)) DNI 1
-    """
-    assert _map_is_valid(text) == [True, False]
-
     # Incorrect connective.
     text: str = """
-        1 1 (P&Q)v(R>S)    P
+        1 1 (P&Q)v(R>S) P
         1 2 (P&Q)v(R>S) DNI 1
     """
     assert _map_is_valid(text) == [True, False]
@@ -703,5 +696,68 @@ def test_double_negation_introduction_rule():
     text: str = """
         1 1 (P&Q)v(R>S)       P
         1 2 ~(~((P&P)v(R>S))) DNI 1
+    """
+    assert _map_is_valid(text) == [True, False]
+
+def test_double_negation_elimination_rule():
+    # Valid use of the rule.
+    text: str = """
+        1 1 ~(~((P&Q)v(R>S))) P
+        1 2 (P&Q)v(R>S)       DNE 1
+    """
+    assert _map_is_valid(text) == [True, True]
+
+    # Missing line numbers for the rule.
+    text: str = """
+        1 1 ~(~((P&Q)v(R>S))) P
+        1 2 (P&Q)v(R>S)       DNE
+    """
+    with pytest.raises(RuntimeError):
+        create_lines_from_text(text)
+
+    # Too many line numbers for the rule.
+    text: str = """
+        1 1 ~(~((P&Q)v(R>S))) P
+        2 2 ~(~((P&Q)v(R>S))) P
+        1 3 (P&Q)v(R>S)       DNE 1,2
+    """
+    with pytest.raises(RuntimeError):
+        create_lines_from_text(text)
+
+
+    # Missing dependency number.
+    text: str = """
+        1 1 ~(~((P&Q)v(R>S))) P
+        2 2 P                 P
+        2 3 (P&Q)v(R>S)       DNE 1
+    """
+    assert _map_is_valid(text) == [True, True, False]
+
+    # Extra invalid dependency number.
+    text: str = """
+        1   1 ~(~((P&Q)v(R>S))) P
+        2   2 P                 P
+        1,2 3 (P&Q)v(R>S)       DNE 1
+    """
+    assert _map_is_valid(text) == [True, True, False]
+
+    # Incorrect connective.
+    text: str = """
+        1 1 (P&Q)v(R>S) P
+        1 2 (P&Q)v(R>S) DNE 1
+    """
+    assert _map_is_valid(text) == [True, False]
+
+    # Incorrect inner connective.
+    text: str = """
+        1 1 ~((P&Q)v(R>S)) P
+        1 2 (P&Q)v(R>S)    DNE 1
+    """
+    assert _map_is_valid(text) == [True, False]
+
+    # Inner formula is not the same as the result.
+    text: str = """
+        1 1 ~(~((P&Q)v(R>S))) P
+        1 2 (P&P)v(R>S)       DNE 1
     """
     assert _map_is_valid(text) == [True, False]
