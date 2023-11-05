@@ -7,7 +7,8 @@ setup(
     python_requires=">=3.11",
     extras_require={
         "dev": [
-            "pytest"
+            "pytest",
+            "pytest-cov",
         ]
     },
 )
