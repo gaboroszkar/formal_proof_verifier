@@ -27,15 +27,15 @@ def test_recognize_predicate():
     assert formula.right.type == FormulaType.atomic_type
     assert formula.right.atom == "P"
 
-    formula: Formula = create_formula("(a)=(b)vP")
+    formula: Formula = create_formula("(a)is(b)vP")
     assert formula.type == FormulaType.or_type
     assert formula.left.type == FormulaType.predicate_type
-    assert formula.left.predicate == "="
+    assert formula.left.predicate == "is"
     assert formula.left.variables == ["a", "b"]
     assert formula.right.type == FormulaType.atomic_type
     assert formula.right.atom == "P"
 
-    formula: Formula = create_formula("(~((S)=({})))>(E(x)((x)in(S)))")
+    formula: Formula = create_formula("(~(S={}))>(Ex(x)in(S))")
     assert formula.type == FormulaType.conditional_type
     assert formula.left.type == FormulaType.not_type
     assert formula.left.inner.type == FormulaType.predicate_type

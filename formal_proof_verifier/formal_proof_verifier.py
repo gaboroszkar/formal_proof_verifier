@@ -243,11 +243,14 @@ def tokenize(formula_str: str) -> list[Union[str, FormulaType]]:
             else:
                 s += c
         elif depth == 0:
-            if c in connectives_to_type:
+            if c in connectives_to_type or c == "=":
                 if s is not None:
                     tokens.append(s)
                     s = None
-                tokens.append(connectives_to_type[c])
+                if c in connectives_to_type:
+                    tokens.append(connectives_to_type[c])
+                else:
+                    tokens.append(c)
             else:
                 if s is None:
                     s = ""
