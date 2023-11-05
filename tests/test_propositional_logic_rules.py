@@ -7,6 +7,80 @@ def _map_is_valid(text: str) -> List[bool]:
     lines: List[Union[str, Line]] = create_lines_from_text(text)
     return [line[1].is_valid() for line in lines]
 
+def test_premise_rule():
+    # Valid use of the rule.
+    text: str = """
+        1 1 (P&Q)v(R>S) P
+        2 2 P>(~(Q>S))  P
+    """
+    assert _map_is_valid(text) == [True, True]
+
+    # Too many line numbers for the rule.
+    text: str = """
+        1 1 (P&Q)v(R>S) P
+        2 2 P>(~(Q>S))  P 1
+    """
+    with pytest.raises(RuntimeError):
+        create_lines_from_text(text)
+
+    # Incorrect dependency.
+    text: str = """
+        1 1 (P&Q)v(R>S) P
+        1 2 P>(~(Q>S))  P
+    """
+    assert _map_is_valid(text) == [True, False]
+
+    # Missing dependency number.
+    text: str = """
+        1 1 (P&Q)v(R>S) P
+        - 2 P>(~(Q>S))  P
+    """
+    assert _map_is_valid(text) == [True, False]
+
+    # Extra invalid dependency number.
+    text: str = """
+        1   1 (P&Q)v(R>S) P
+        1,2 2 P>(~(Q>S))  P
+    """
+    assert _map_is_valid(text) == [True, False]
+
+def test_assumption_rule():
+    # Valid use of the rule.
+    text: str = """
+        1 1 (P&Q)v(R>S) A
+        2 2 P>(~(Q>S))  A
+    """
+    assert _map_is_valid(text) == [True, True]
+
+    # Too many line numbers for the rule.
+    text: str = """
+        1 1 (P&Q)v(R>S) A
+        2 2 P>(~(Q>S))  A 1
+    """
+    with pytest.raises(RuntimeError):
+        create_lines_from_text(text)
+
+    # Incorrect dependency.
+    text: str = """
+        1 1 (P&Q)v(R>S) A
+        1 2 P>(~(Q>S))  A
+    """
+    assert _map_is_valid(text) == [True, False]
+
+    # Missing dependency number.
+    text: str = """
+        1 1 (P&Q)v(R>S) A
+        - 2 P>(~(Q>S))  A
+    """
+    assert _map_is_valid(text) == [True, False]
+
+    # Extra invalid dependency number.
+    text: str = """
+        1   1 (P&Q)v(R>S) A
+        1,2 2 P>(~(Q>S))  A
+    """
+    assert _map_is_valid(text) == [True, False]
+
 def test_and_introduction_rule():
     # Valid use of the rule.
     text: str = """
