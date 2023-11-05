@@ -403,12 +403,12 @@ def test_or_elimination_rule():
 
     # Third rule line does not depend on the first assumption.
     text: str = """
-        1 1 (P&Q)v(R&P) P
-        2 2 P&Q         A
-        3 3 P           A
-        4 4 R&P         A
-        4 5 P           &E 4
-        1 6 P           vE 1,2,3,4,5
+        1   1 (P&Q)v(R&P) P
+        2   2 P&Q         A
+        3   3 P           A
+        4   4 R&P         A
+        4   5 P           &E 4
+        1,3 6 P           vE 1,2,3,4,5
     """
     assert _map_is_valid(text) == [True, True, True, True, True, False]
 
@@ -447,12 +447,12 @@ def test_or_elimination_rule():
 
     # Fourth rule line does not depend on the first assumption.
     text: str = """
-        1 1 (P&Q)v(R&P) P
-        2 2 P&Q         A
-        2 3 P           &E 2
-        4 4 R&P         A
-        5 5 P           A
-        1 6 P           vE 1,2,3,4,5
+        1   1 (P&Q)v(R&P) P
+        2   2 P&Q         A
+        2   3 P           &E 2
+        4   4 R&P         A
+        5   5 P           A
+        1,5 6 P           vE 1,2,3,4,5
     """
     assert _map_is_valid(text) == [True, True, True, True, True, False]
 
@@ -460,7 +460,7 @@ def test_or_elimination_rule():
     text: str = """
         1 1 (P&Q)v(R&P) P
         2 2 P&Q         A
-        2 3 Q           &E 2
+        2 3 P           &E 2
         4 4 R&P         A
         4 5 R           &E 4
         1 6 P           vE 1,2,3,4,5
@@ -796,6 +796,23 @@ def test_modus_tollens_rule():
     """
     with pytest.raises(RuntimeError):
         create_lines_from_text(text)
+
+    # Missing dependency number.
+    text: str = """
+        1 1 (P&Q)>(R&S) P
+        2 2 ~(R&S)      P
+        1 3 ~(P&Q)      MT 1,2
+    """
+    assert _map_is_valid(text) == [True, True, False]
+
+    # Extra invalid dependency number.
+    text: str = """
+        1     1 (P&Q)>(R&S) P
+        2     2 ~(R&S)      P
+        3     3 ~(R&S)      P
+        1,2,3 4 ~(P&Q)      MT 1,2
+    """
+    assert _map_is_valid(text) == [True, True, True, False]
 
     # Incorrect connective.
     text: str = """
