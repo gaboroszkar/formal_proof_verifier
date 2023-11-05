@@ -55,7 +55,7 @@ def test_assumption_rule():
     # Too many line numbers for the rule.
     text: str = """
         1 1 (P&Q)v(R>S) A
-        2 2 P>(~(Q>S))  A 1
+        2 2 P>(~(Q>S))  1 A
     """
     with pytest.raises(RuntimeError):
         create_lines_from_text(text)
@@ -87,9 +87,9 @@ def test_and_introduction_rule():
         1     1 P           P
         2     2 Q           P
         3     3 R           P
-        1,2   4 P&Q         &I 1,2
-        2,3   5 Q&R         &I 2,3
-        1,2,3 6 (Q&R)&(P&Q) &I 5,4
+        1,2   4 P&Q         1,2 &I
+        2,3   5 Q&R         2,3 &I
+        1,2,3 6 (Q&R)&(P&Q) 5,4 &I
     """
     assert _map_is_valid(text) == [True, True, True, True, True, True]
 
@@ -98,7 +98,7 @@ def test_and_introduction_rule():
         1   1 P   P
         2   2 Q   P
         3   3 R   P
-        1,2 4 P&Q &I 1
+        1,2 4 P&Q 1 &I
     """
     with pytest.raises(RuntimeError):
         create_lines_from_text(text)
@@ -108,7 +108,7 @@ def test_and_introduction_rule():
         1   1 P   P
         2   2 Q   P
         3   3 R   P
-        1,2 4 P&Q &I 1,2,3
+        1,2 4 P&Q 1,2,3 &I
     """
     with pytest.raises(RuntimeError):
         create_lines_from_text(text)
@@ -118,10 +118,10 @@ def test_and_introduction_rule():
         1   1 P           P
         2   2 Q           P
         3   3 R           P
-        1,2 4 P&Q         &I 1,2
-        2,3 5 Q&R         &I 2,3
-        1,2 6 (Q&R)&(P&Q) &I 5,4
-        2,3 7 (Q&R)&(P&Q) &I 5,4
+        1,2 4 P&Q         1,2 &I
+        2,3 5 Q&R         2,3 &I
+        1,2 6 (Q&R)&(P&Q) 5,4 &I
+        2,3 7 (Q&R)&(P&Q) 5,4 &I
     """
     assert _map_is_valid(text) == [True, True, True, True, True, False, False]
 
@@ -130,8 +130,8 @@ def test_and_introduction_rule():
         1     1 P   P
         2     2 Q   P
         3     3 R   P
-        1,2,3 4 P&Q &I 1,2
-        1,2,3 5 Q&R &I 2,3
+        1,2,3 4 P&Q 1,2 &I
+        1,2,3 5 Q&R 2,3 &I
     """
     assert _map_is_valid(text) == [True, True, True, False, False]
 
@@ -139,7 +139,7 @@ def test_and_introduction_rule():
     text: str = """
         1   1 P   P
         2   2 Q   P
-        1,2 3 PvQ &I 1,2
+        1,2 3 PvQ 1,2 &I
     """
     assert _map_is_valid(text) == [True, True, False]
 
@@ -148,9 +148,9 @@ def test_and_introduction_rule():
         1     1 P           P
         2     2 Q           P
         3     3 R           P
-        1,2   4 P&Q         &I 1,2
-        2,3   5 Q&R         &I 2,3
-        1,2,3 6 (R&R)&(P&Q) &I 5,4
+        1,2   4 P&Q         1,2 &I
+        2,3   5 Q&R         2,3 &I
+        1,2,3 6 (R&R)&(P&Q) 5,4 &I
     """
     assert _map_is_valid(text) == [True, True, True, True, True, False]
 
@@ -159,9 +159,9 @@ def test_and_introduction_rule():
         1     1 P           P
         2     2 Q           P
         3     3 R           P
-        1,2   4 P&Q         &I 1,2
-        2,3   5 Q&R         &I 2,3
-        1,2,3 6 (Q&R)&(Q&Q) &I 5,4
+        1,2   4 P&Q         1,2 &I
+        2,3   5 Q&R         2,3 &I
+        1,2,3 6 (Q&R)&(Q&Q) 5,4 &I
     """
     assert _map_is_valid(text) == [True, True, True, True, True, False]
 
@@ -169,8 +169,8 @@ def test_and_elimination_rule():
     # Valid use of the rule.
     text: str = """
         1 1 P&Q P
-        1 2 P   &E 1
-        1 3 Q   &E 1
+        1 2 P   1 &E
+        1 3 Q   1 &E
     """
     assert _map_is_valid(text) == [True, True, True]
 
@@ -178,13 +178,13 @@ def test_and_elimination_rule():
     text: str = """
         1   1 Q&R         P
         2   2 P&Q         P
-        1,2 3 (P&Q)&(Q&R) &I 2,1
-        1,2 4 P&Q         &E 3
-        1,2 5 P           &E 4
-        1,2 6 Q           &E 4
-        1,2 7 Q&R         &E 3
-        1,2 8 Q           &E 7
-        1,2 9 R           &E 7
+        1,2 3 (P&Q)&(Q&R) 2,1 &I
+        1,2 4 P&Q         3 &E
+        1,2 5 P           4 &E
+        1,2 6 Q           4 &E
+        1,2 7 Q&R         3 &E
+        1,2 8 Q           7 &E
+        1,2 9 R           7 &E
     """
     assert _map_is_valid(text) == [True, True, True, True, True, True, True, True, True]
 
@@ -200,7 +200,7 @@ def test_and_elimination_rule():
     text: str = """
         1 1 P&Q P
         2 2 R   P
-        1 3 P   &E 1,2
+        1 3 P   1,2 &E
     """
     with pytest.raises(RuntimeError):
         create_lines_from_text(text)
@@ -209,9 +209,9 @@ def test_and_elimination_rule():
     text: str = """
         1   1 Q&R         P
         2   2 P&Q         P
-        1,2 3 (P&Q)&(Q&R) &I 2,1
-        1   4 P&Q         &E 3
-        2   5 Q&R         &E 3
+        1,2 3 (P&Q)&(Q&R) 2,1 &I
+        1   4 P&Q         3 &E
+        2   5 Q&R         3 &E
     """
     assert _map_is_valid(text) == [True, True, True, False, False]
 
@@ -219,15 +219,15 @@ def test_and_elimination_rule():
     text: str = """
         1     1 Q&R         P
         2     2 P&Q         P
-        1,2   3 (P&Q)&(Q&R) &I 2,1
-        1,2,3 4 P&Q         &E 3
+        1,2   3 (P&Q)&(Q&R) 2,1 &I
+        1,2,3 4 P&Q         3 &E
     """
     assert _map_is_valid(text) == [True, True, True, False]
 
     # Incorrect connective.
     text: str = """
         1 1 PvQ P
-        1 2 P   &E 1
+        1 2 P   1 &E
     """
     assert _map_is_valid(text) == [True, False]
 
@@ -235,8 +235,8 @@ def test_and_elimination_rule():
     text: str = """
         1   1 Q&R         P
         2   2 P&Q         P
-        1,2 3 (P&Q)&(Q&R) &I 2,1
-        1,2 4 P&P         &E 3
+        1,2 3 (P&Q)&(Q&R) 2,1 &I
+        1,2 4 P&P         3 &E
     """
     assert _map_is_valid(text) == [True, True, True, False]
 
@@ -244,8 +244,8 @@ def test_or_introduction_rule():
     # Valid use of the rule.
     text: str = """
         1 1 P       P
-        1 2 PvQ     vI 1
-        1 3 Rv(PvQ) vI 2
+        1 2 PvQ     1 vI
+        1 3 Rv(PvQ) 2 vI
     """
     assert _map_is_valid(text) == [True, True, True]
 
@@ -253,8 +253,8 @@ def test_or_introduction_rule():
     text: str = """
         1   1 P       P
         2   2 Q       P
-        1,2 3 P&Q     &I 1,2
-        1,2 4 Rv(P&Q) vI 3
+        1,2 3 P&Q     1,2 &I
+        1,2 4 Rv(P&Q) 3 vI
     """
     assert _map_is_valid(text) == [True, True, True, True]
 
@@ -270,8 +270,8 @@ def test_or_introduction_rule():
     # Too many line numbers for the rule.
     text: str = """
         1 1 P       P
-        1 2 PvQ     vI 1
-        1 3 Rv(PvQ) vI 1,2
+        1 2 PvQ     1 vI
+        1 3 Rv(PvQ) 1,2 vI
     """
     with pytest.raises(RuntimeError):
         create_lines_from_text(text)
@@ -280,8 +280,8 @@ def test_or_introduction_rule():
     text: str = """
         1   1 P       P
         2   2 Q       P
-        1,2 3 P&Q     &I 1,2
-        2   4 Rv(P&Q) vI 3
+        1,2 3 P&Q     1,2 &I
+        2   4 Rv(P&Q) 3 vI
     """
     assert _map_is_valid(text) == [True, True, True, False]
 
@@ -289,14 +289,14 @@ def test_or_introduction_rule():
     text: str = """
         1   1 P   P
         2   2 Q   P
-        1,2 3 PvQ vI 1
+        1,2 3 PvQ 1 vI
     """
     assert _map_is_valid(text) == [True, True, False]
 
     # Incorrect connective.
     text: str = """
         1 1 P   P
-        1 2 P&Q vI 1
+        1 2 P&Q 1 vI
     """
     assert _map_is_valid(text) == [True, False]
 
@@ -304,7 +304,7 @@ def test_or_introduction_rule():
     text: str = """
         1 1 P   P
         2 2 Q   P
-        2 3 PvP vI 2
+        2 3 PvP 2 vI
     """
     assert _map_is_valid(text) == [True, True, False]
 
@@ -313,7 +313,7 @@ def test_or_elimination_rule():
     text: str = """
         1 1 ((P&Q)>R)v((P&Q)>R) P
         2 2 (P&Q)>R             A
-        1 3 (P&Q)>R             vE 1,2,2,2,2
+        1 3 (P&Q)>R             1,2,2,2,2 vE
     """
     assert _map_is_valid(text) == [True, True, True]
 
@@ -321,10 +321,10 @@ def test_or_elimination_rule():
     text: str = """
         1 1 (P&Q)v(R&P) P
         2 2 P&Q         A
-        2 3 P           &E 2
+        2 3 P           2 &E
         4 4 R&P         A
-        4 5 P           &E 4
-        1 6 P           vE 1,2,3,4,5
+        4 5 P           4 &E
+        1 6 P           1,2,3,4,5 vE
     """
     assert _map_is_valid(text) == [True, True, True, True, True, True]
 
@@ -332,7 +332,7 @@ def test_or_elimination_rule():
     text: str = """
         1 1 ((P&Q)>R)v((P&Q)>R) P
         2 2 (P&Q)>R             A
-        1 3 (P&Q)>R             vE 1,2,2,2
+        1 3 (P&Q)>R             1,2,2,2 vE
     """
     with pytest.raises(RuntimeError):
         create_lines_from_text(text)
@@ -341,7 +341,7 @@ def test_or_elimination_rule():
     text: str = """
         1 1 ((P&Q)>R)v((P&Q)>R) P
         2 2 (P&Q)>R             A
-        1 3 (P&Q)>R             vE 1,2,2,2,2,2
+        1 3 (P&Q)>R             1,2,2,2,2,2 vE
     """
     with pytest.raises(RuntimeError):
         create_lines_from_text(text)
@@ -350,10 +350,10 @@ def test_or_elimination_rule():
     text: str = """
         1 1 (P&Q)v(R&P) P
         2 2 P&Q         A
-        2 3 P           &E 2
+        2 3 P           2 &E
         4 4 R&P         A
-        4 5 P           &E 4
-        - 6 P           vE 1,2,3,4,5
+        4 5 P           4 &E
+        - 6 P           1,2,3,4,5 vE
     """
     assert _map_is_valid(text) == [True, True, True, True, True, False]
 
@@ -361,10 +361,10 @@ def test_or_elimination_rule():
     text: str = """
         1   1 (P&Q)v(R&P) P
         2   2 P&Q         A
-        2   3 P           &E 2
+        2   3 P           2 &E
         4   4 R&P         A
-        4   5 P           &E 4
-        1,2 6 P           vE 1,2,3,4,5
+        4   5 P           4 &E
+        1,2 6 P           1,2,3,4,5 vE
     """
     assert _map_is_valid(text) == [True, True, True, True, True, False]
 
@@ -372,10 +372,10 @@ def test_or_elimination_rule():
     text: str = """
         1 1 (P&Q)&(R&P) P
         2 2 P&Q         A
-        2 3 P           &E 2
+        2 3 P           2 &E
         4 4 R&P         A
-        4 5 P           &E 4
-        1 6 P           vE 1,2,3,4,5
+        4 5 P           4 &E
+        1 6 P           1,2,3,4,5 vE
     """
     assert _map_is_valid(text) == [True, True, True, True, True, False]
 
@@ -383,10 +383,10 @@ def test_or_elimination_rule():
     text: str = """
         1 1 (P&Q)v(R&P) P
         2 2 P&Q         P
-        2 3 P           &E 2
+        2 3 P           2 &E
         4 4 R&P         A
-        4 5 P           &E 4
-        1 6 P           vE 1,2,3,4,5
+        4 5 P           4 &E
+        1 6 P           1,2,3,4,5 vE
     """
     assert _map_is_valid(text) == [True, True, True, True, True, False]
 
@@ -394,10 +394,10 @@ def test_or_elimination_rule():
     text: str = """
         1 1 (P&Q)v(R&P) P
         2 2 P&P         A
-        2 3 P           &E 2
+        2 3 P           2 &E
         4 4 R&P         A
-        4 5 P           &E 4
-        1 6 P           vE 1,2,3,4,5
+        4 5 P           4 &E
+        1 6 P           1,2,3,4,5 vE
     """
     assert _map_is_valid(text) == [True, True, True, True, True, False]
 
@@ -407,8 +407,8 @@ def test_or_elimination_rule():
         2   2 P&Q         A
         3   3 P           A
         4   4 R&P         A
-        4   5 P           &E 4
-        1,3 6 P           vE 1,2,3,4,5
+        4   5 P           4 &E
+        1,3 6 P           1,2,3,4,5 vE
     """
     assert _map_is_valid(text) == [True, True, True, True, True, False]
 
@@ -416,10 +416,10 @@ def test_or_elimination_rule():
     text: str = """
         1 1 (P&Q)v(R&P) P
         2 2 P&Q         A
-        2 3 Q           &E 2
+        2 3 Q           2 &E
         4 4 R&P         A
-        4 5 P           &E 4
-        1 6 P           vE 1,2,3,4,5
+        4 5 P           4 &E
+        1 6 P           1,2,3,4,5 vE
     """
     assert _map_is_valid(text) == [True, True, True, True, True, False]
 
@@ -427,10 +427,10 @@ def test_or_elimination_rule():
     text: str = """
         1 1 (P&Q)v(R&P) P
         2 2 P&Q         A
-        2 3 P           &E 2
+        2 3 P           2 &E
         4 4 R&P         P
-        4 5 P           &E 4
-        1 6 P           vE 1,2,3,4,5
+        4 5 P           4 &E
+        1 6 P           1,2,3,4,5 vE
     """
     assert _map_is_valid(text) == [True, True, True, True, True, False]
 
@@ -438,10 +438,10 @@ def test_or_elimination_rule():
     text: str = """
         1 1 (P&Q)v(R&P) P
         2 2 P&Q         A
-        2 3 P           &E 2
+        2 3 P           2 &E
         4 4 P&P         A
-        4 5 P           &E 4
-        1 6 P           vE 1,2,3,4,5
+        4 5 P           4 &E
+        1 6 P           1,2,3,4,5 vE
     """
     assert _map_is_valid(text) == [True, True, True, True, True, False]
 
@@ -449,10 +449,10 @@ def test_or_elimination_rule():
     text: str = """
         1   1 (P&Q)v(R&P) P
         2   2 P&Q         A
-        2   3 P           &E 2
+        2   3 P           2 &E
         4   4 R&P         A
         5   5 P           A
-        1,5 6 P           vE 1,2,3,4,5
+        1,5 6 P           1,2,3,4,5 vE
     """
     assert _map_is_valid(text) == [True, True, True, True, True, False]
 
@@ -460,10 +460,10 @@ def test_or_elimination_rule():
     text: str = """
         1 1 (P&Q)v(R&P) P
         2 2 P&Q         A
-        2 3 P           &E 2
+        2 3 P           2 &E
         4 4 R&P         A
-        4 5 R           &E 4
-        1 6 P           vE 1,2,3,4,5
+        4 5 R           4 &E
+        1 6 P           1,2,3,4,5 vE
     """
     assert _map_is_valid(text) == [True, True, True, True, True, False]
 
@@ -471,7 +471,7 @@ def test_conditional_proof_rule():
     # Valid use of the rule.
     text: str = """
         1 1 P   A
-        - 2 P>P CP 1,1
+        - 2 P>P 1,1 CP
     """
     assert _map_is_valid(text) == [True, True]
 
@@ -479,10 +479,10 @@ def test_conditional_proof_rule():
     text: str = """
         1   1 P       A
         2   2 Q       A
-        1,2 3 P&Q     &I 1,2
-        1,2 4 P       &E 3
-        1   5 Q>P     CP 2,4
-        -   6 P>(Q>P) CP 1,5
+        1,2 3 P&Q     1,2 &I
+        1,2 4 P       3 &E
+        1   5 Q>P     2,4 CP
+        -   6 P>(Q>P) 1,5 CP
     """
     assert _map_is_valid(text) == [True, True, True, True, True, True]
 
@@ -490,9 +490,9 @@ def test_conditional_proof_rule():
     text: str = """
         1   1 P   P
         2   2 Q   A
-        1,2 3 P&Q &I 1,2
-        1,2 4 P   &E 3
-        1   5 Q>P CP 2
+        1,2 3 P&Q 1,2 &I
+        1,2 4 P   3 &E
+        1   5 Q>P 2 CP
     """
     with pytest.raises(RuntimeError):
         create_lines_from_text(text)
@@ -501,9 +501,9 @@ def test_conditional_proof_rule():
     text: str = """
         1   1 P   P
         2   2 Q   A
-        1,2 3 P&Q &I 1,2
-        1,2 4 P   &E 3
-        1   5 Q>P CP 2,3,4
+        1,2 3 P&Q 1,2 &I
+        1,2 4 P   3 &E
+        1   5 Q>P 2,3,4 CP
     """
     with pytest.raises(RuntimeError):
         create_lines_from_text(text)
@@ -512,9 +512,9 @@ def test_conditional_proof_rule():
     text: str = """
         1   1 P   P
         2   2 Q   A
-        1,2 3 P&Q &I 1,2
-        1,2 4 P   &E 3
-        1,2 5 Q>P CP 2,4
+        1,2 3 P&Q 1,2 &I
+        1,2 4 P   3 &E
+        1,2 5 Q>P 2,4 CP
     """
     assert _map_is_valid(text) == [True, True, True, True, False]
 
@@ -522,9 +522,9 @@ def test_conditional_proof_rule():
     text: str = """
         1   1 P   P
         2   2 Q   A
-        1,2 3 P&Q &I 1,2
-        1,2 4 P   &E 3
-        1   5 Q&P CP 2,4
+        1,2 3 P&Q 1,2 &I
+        1,2 4 P   3 &E
+        1   5 Q&P 2,4 CP
     """
     assert _map_is_valid(text) == [True, True, True, True, False]
 
@@ -532,9 +532,9 @@ def test_conditional_proof_rule():
     text: str = """
         1   1 P   P
         2   2 Q   P
-        1,2 3 P&Q &I 1,2
-        1,2 4 P   &E 3
-        1   5 Q>P CP 2,4
+        1,2 3 P&Q 1,2 &I
+        1,2 4 P   3 &E
+        1   5 Q>P 2,4 CP
     """
     assert _map_is_valid(text) == [True, True, True, True, False]
 
@@ -542,9 +542,9 @@ def test_conditional_proof_rule():
     text: str = """
         1   1 P   P
         2   2 Q   A
-        1,2 3 P&Q &I 1,2
-        1,2 4 P   &E 3
-        1   5 Q>P CP 2,1
+        1,2 3 P&Q 1,2 &I
+        1,2 4 P   3 &E
+        1   5 Q>P 2,1 CP
     """
     assert _map_is_valid(text) == [True, True, True, True, False]
 
@@ -552,9 +552,9 @@ def test_conditional_proof_rule():
     text: str = """
         1   1 P   P
         2   2 Q   A
-        1,2 3 P&Q &I 1,2
-        1,2 4 P   &E 3
-        1   5 R>P CP 2,4
+        1,2 3 P&Q 1,2 &I
+        1,2 4 P   3 &E
+        1   5 R>P 2,4 CP
     """
     assert _map_is_valid(text) == [True, True, True, True, False]
 
@@ -562,9 +562,9 @@ def test_conditional_proof_rule():
     text: str = """
         1   1 P   P
         2   2 Q   A
-        1,2 3 P&Q &I 1,2
-        1,2 4 P   &E 3
-        1   5 Q>R CP 2,4
+        1,2 3 P&Q 1,2 &I
+        1,2 4 P   3 &E
+        1   5 Q>R 2,4 CP
     """
     assert _map_is_valid(text) == [True, True, True, True, False]
 
@@ -573,7 +573,7 @@ def test_modus_ponens_rule():
     text: str = """
         1   1 P>Q P
         2   2 P   P
-        1,2 3 Q   MP 1,2
+        1,2 3 Q   1,2 MP
     """
     assert _map_is_valid(text) == [True, True, True]
 
@@ -581,7 +581,7 @@ def test_modus_ponens_rule():
     text: str = """
         1   1 P>Q P
         2   2 P   P
-        1,2 3 Q   MP 1
+        1,2 3 Q   1 MP
     """
     with pytest.raises(RuntimeError):
         create_lines_from_text(text)
@@ -591,7 +591,7 @@ def test_modus_ponens_rule():
         1   1 P>Q P
         2   2 P   P
         3   3 Q   P
-        1,2 4 Q   MP 1,2,3
+        1,2 4 Q   1,2,3 MP
     """
     with pytest.raises(RuntimeError):
         create_lines_from_text(text)
@@ -600,7 +600,7 @@ def test_modus_ponens_rule():
     text: str = """
         1 1 P>Q P
         2 2 P   P
-        1 3 Q   MP 1,2
+        1 3 Q   1,2 MP
     """
     assert _map_is_valid(text) == [True, True, False]
 
@@ -609,7 +609,7 @@ def test_modus_ponens_rule():
         1   1 P>Q P
         2   2 P   P
         3   3 Q   P
-        1,3 4 Q   MP 1,2
+        1,3 4 Q   1,2 MP
     """
     assert _map_is_valid(text) == [True, True, True, False]
 
@@ -617,7 +617,7 @@ def test_modus_ponens_rule():
     text: str = """
         1   1 P&Q P
         2   2 P   P
-        1,2 3 Q   MP 1,2
+        1,2 3 Q   1,2 MP
     """
     assert _map_is_valid(text) == [True, True, False]
 
@@ -625,7 +625,7 @@ def test_modus_ponens_rule():
     text: str = """
         1   1 P>Q P
         2   2 Q   P
-        1,2 3 Q   MP 1,2
+        1,2 3 Q   1,2 MP
     """
     assert _map_is_valid(text) == [True, True, False]
 
@@ -633,7 +633,7 @@ def test_modus_ponens_rule():
     text: str = """
         1   1 P>Q P
         2   2 P   P
-        1,2 3 P   MP 1,2
+        1,2 3 P   1,2 MP
     """
     assert _map_is_valid(text) == [True, True, False]
 
@@ -641,7 +641,7 @@ def test_double_negation_introduction_rule():
     # Valid use of the rule.
     text: str = """
         1 1 (P&Q)v(R>S)       P
-        1 2 ~(~((P&Q)v(R>S))) DNI 1
+        1 2 ~(~((P&Q)v(R>S))) 1 DNI
     """
     assert _map_is_valid(text) == [True, True]
 
@@ -657,7 +657,7 @@ def test_double_negation_introduction_rule():
     text: str = """
         1 1 (P&Q)v(R>S)       P
         2 2 (P&Q)v(R>S)       P
-        1 3 ~(~((P&Q)v(R>S))) DNI 1,2
+        1 3 ~(~((P&Q)v(R>S))) 1,2 DNI
     """
     with pytest.raises(RuntimeError):
         create_lines_from_text(text)
@@ -666,7 +666,7 @@ def test_double_negation_introduction_rule():
     text: str = """
         1 1 (P&Q)v(R>S)       P
         2 2 P                 P
-        2 3 ~(~((P&Q)v(R>S))) DNI 1
+        2 3 ~(~((P&Q)v(R>S))) 1 DNI
     """
     assert _map_is_valid(text) == [True, True, False]
 
@@ -674,28 +674,28 @@ def test_double_negation_introduction_rule():
     text: str = """
         1   1 (P&Q)v(R>S)       P
         2   2 P                 P
-        1,2 3 ~(~((P&Q)v(R>S))) DNI 1
+        1,2 3 ~(~((P&Q)v(R>S))) 1 DNI
     """
     assert _map_is_valid(text) == [True, True, False]
 
     # Incorrect connective.
     text: str = """
         1 1 (P&Q)v(R>S) P
-        1 2 (P&Q)v(R>S) DNI 1
+        1 2 (P&Q)v(R>S) 1 DNI
     """
     assert _map_is_valid(text) == [True, False]
 
     # Incorrect inner connective.
     text: str = """
         1 1 (P&Q)v(R>S)    P
-        1 2 ~((P&Q)v(R>S)) DNI 1
+        1 2 ~((P&Q)v(R>S)) 1 DNI
     """
     assert _map_is_valid(text) == [True, False]
 
     # Inner formula is not the same as the first rule line.
     text: str = """
         1 1 (P&Q)v(R>S)       P
-        1 2 ~(~((P&P)v(R>S))) DNI 1
+        1 2 ~(~((P&P)v(R>S))) 1 DNI
     """
     assert _map_is_valid(text) == [True, False]
 
@@ -703,7 +703,7 @@ def test_double_negation_elimination_rule():
     # Valid use of the rule.
     text: str = """
         1 1 ~(~((P&Q)v(R>S))) P
-        1 2 (P&Q)v(R>S)       DNE 1
+        1 2 (P&Q)v(R>S)       1 DNE
     """
     assert _map_is_valid(text) == [True, True]
 
@@ -719,7 +719,7 @@ def test_double_negation_elimination_rule():
     text: str = """
         1 1 ~(~((P&Q)v(R>S))) P
         2 2 ~(~((P&Q)v(R>S))) P
-        1 3 (P&Q)v(R>S)       DNE 1,2
+        1 3 (P&Q)v(R>S)       1,2 DNE
     """
     with pytest.raises(RuntimeError):
         create_lines_from_text(text)
@@ -728,7 +728,7 @@ def test_double_negation_elimination_rule():
     text: str = """
         1 1 ~(~((P&Q)v(R>S))) P
         2 2 P                 P
-        2 3 (P&Q)v(R>S)       DNE 1
+        2 3 (P&Q)v(R>S)       1 DNE
     """
     assert _map_is_valid(text) == [True, True, False]
 
@@ -736,28 +736,28 @@ def test_double_negation_elimination_rule():
     text: str = """
         1   1 ~(~((P&Q)v(R>S))) P
         2   2 P                 P
-        1,2 3 (P&Q)v(R>S)       DNE 1
+        1,2 3 (P&Q)v(R>S)       1 DNE
     """
     assert _map_is_valid(text) == [True, True, False]
 
     # Incorrect connective.
     text: str = """
         1 1 (P&Q)v(R>S) P
-        1 2 (P&Q)v(R>S) DNE 1
+        1 2 (P&Q)v(R>S) 1 DNE
     """
     assert _map_is_valid(text) == [True, False]
 
     # Incorrect inner connective.
     text: str = """
         1 1 ~((P&Q)v(R>S)) P
-        1 2 (P&Q)v(R>S)    DNE 1
+        1 2 (P&Q)v(R>S)    1 DNE
     """
     assert _map_is_valid(text) == [True, False]
 
     # Inner formula is not the same as the result.
     text: str = """
         1 1 ~(~((P&Q)v(R>S))) P
-        1 2 (P&P)v(R>S)       DNE 1
+        1 2 (P&P)v(R>S)       1 DNE
     """
     assert _map_is_valid(text) == [True, False]
 
@@ -766,7 +766,7 @@ def test_modus_tollens_rule():
     text: str = """
         1   1 P>Q P
         2   2 ~Q  P
-        1,2 3 ~P  MT 1,2
+        1,2 3 ~P  1,2 MT
     """
     assert _map_is_valid(text) == [True, True, True]
 
@@ -774,7 +774,7 @@ def test_modus_tollens_rule():
     text: str = """
         1   1 (P&Q)>(R&S) P
         2   2 ~(R&S)      P
-        1,2 3 ~(P&Q)      MT 1,2
+        1,2 3 ~(P&Q)      1,2 MT
     """
     assert _map_is_valid(text) == [True, True, True]
 
@@ -782,7 +782,7 @@ def test_modus_tollens_rule():
     text: str = """
         1   1 P>Q P
         2   2 ~Q  P
-        1,2 3 ~P  MT 1
+        1,2 3 ~P  1 MT
     """
     with pytest.raises(RuntimeError):
         create_lines_from_text(text)
@@ -792,7 +792,7 @@ def test_modus_tollens_rule():
         1   1 P>Q P
         2   2 ~Q  P
         3   3 ~Q  P
-        1,2 3 ~P  MT 1,2,3
+        1,2 3 ~P  1,2,3 MT
     """
     with pytest.raises(RuntimeError):
         create_lines_from_text(text)
@@ -801,7 +801,7 @@ def test_modus_tollens_rule():
     text: str = """
         1 1 (P&Q)>(R&S) P
         2 2 ~(R&S)      P
-        1 3 ~(P&Q)      MT 1,2
+        1 3 ~(P&Q)      1,2 MT
     """
     assert _map_is_valid(text) == [True, True, False]
 
@@ -810,7 +810,7 @@ def test_modus_tollens_rule():
         1     1 (P&Q)>(R&S) P
         2     2 ~(R&S)      P
         3     3 ~(R&S)      P
-        1,2,3 4 ~(P&Q)      MT 1,2
+        1,2,3 4 ~(P&Q)      1,2 MT
     """
     assert _map_is_valid(text) == [True, True, True, False]
 
@@ -818,7 +818,7 @@ def test_modus_tollens_rule():
     text: str = """
         1   1 (P&Q)&(R&S) P
         2   2 ~(R&S)      P
-        1,2 3 ~(P&Q)      MT 1,2
+        1,2 3 ~(P&Q)      1,2 MT
     """
     assert _map_is_valid(text) == [True, True, False]
 
@@ -826,7 +826,7 @@ def test_modus_tollens_rule():
     text: str = """
         1   1 (P&Q)>(R&S) P
         2   2 R&S         P
-        1,2 3 ~(P&Q)      MT 1,2
+        1,2 3 ~(P&Q)      1,2 MT
     """
     assert _map_is_valid(text) == [True, True, False]
 
@@ -834,7 +834,7 @@ def test_modus_tollens_rule():
     text: str = """
         1   1 (P&Q)>(R&S) P
         2   2 ~(R&S)      P
-        1,2 3 P&Q         MT 1,2
+        1,2 3 P&Q         1,2 MT
     """
     assert _map_is_valid(text) == [True, True, False]
 
@@ -842,7 +842,7 @@ def test_modus_tollens_rule():
     text: str = """
         1   1 (P&Q)>(R&S) P
         2   2 ~(R&R)      P
-        1,2 3 ~(P&Q)      MT 1,2
+        1,2 3 ~(P&Q)      1,2 MT
     """
     assert _map_is_valid(text) == [True, True, False]
 
@@ -850,7 +850,7 @@ def test_modus_tollens_rule():
     text: str = """
         1   1 (P&Q)>(R&S) P
         2   2 ~(R&S)      P
-        1,2 3 ~(P&P)      MT 1,2
+        1,2 3 ~(P&P)      1,2 MT
     """
     assert _map_is_valid(text) == [True, True, False]
 
@@ -858,7 +858,7 @@ def test_reductio_ad_absurdum_rule():
     # Valid use of the rule.
     text: str = """
         1 1 P&(~P)    A
-        - 2 ~(P&(~P)) RAA 1,1
+        - 2 ~(P&(~P)) 1,1 RAA
     """
     assert _map_is_valid(text) == [True, True]
 
@@ -866,9 +866,9 @@ def test_reductio_ad_absurdum_rule():
     text: str = """
         1   1 P>(~P) P
         2   2 P      A
-        1,2 3 ~P     MP 1,2
-        1,2 4 P&(~P) &I 2,3
-        1   5 ~P     RAA 2,4
+        1,2 3 ~P     1,2 MP
+        1,2 4 P&(~P) 2,3 &I
+        1   5 ~P     2,4 RAA
     """
     assert _map_is_valid(text) == [True, True, True, True, True]
 
@@ -876,14 +876,14 @@ def test_reductio_ad_absurdum_rule():
     text: str = """
         1   1 (P&Q)>(R&S) P
         2   2 ~(R&S)      P
-        1,2 3 ~(P&Q)      MT 1,2
+        1,2 3 ~(P&Q)      1,2 MT
     """
     assert _map_is_valid(text) == [True, True, True]
 
     # Missing line numbers for the rule.
     text: str = """
         1 1 P&(~P)    A
-        - 2 ~(P&(~P)) RAA 1
+        - 2 ~(P&(~P)) 1 RAA
     """
     with pytest.raises(RuntimeError):
         create_lines_from_text(text)
@@ -891,7 +891,7 @@ def test_reductio_ad_absurdum_rule():
     # Too many line numbers for the rule.
     text: str = """
         1 1 P&(~P)    A
-        - 2 ~(P&(~P)) RAA 1,1,1
+        - 2 ~(P&(~P)) 1,1,1 RAA
     """
     with pytest.raises(RuntimeError):
         create_lines_from_text(text)
@@ -900,9 +900,9 @@ def test_reductio_ad_absurdum_rule():
     text: str = """
         1   1 P>(~P) P
         2   2 P      A
-        1,2 3 ~P     MP 1,2
-        1,2 4 P&(~P) &I 2,3
-        -   5 ~P     RAA 2,4
+        1,2 3 ~P     1,2 MP
+        1,2 4 P&(~P) 2,3 &I
+        -   5 ~P     2,4 RAA
     """
     assert _map_is_valid(text) == [True, True, True, True, False]
 
@@ -910,9 +910,9 @@ def test_reductio_ad_absurdum_rule():
     text: str = """
         1   1 P>(~P) P
         2   2 P      A
-        1,2 3 ~P     MP 1,2
-        1,2 4 P&(~P) &I 2,3
-        1,2 5 ~P     RAA 2,4
+        1,2 3 ~P     1,2 MP
+        1,2 4 P&(~P) 2,3 &I
+        1,2 5 ~P     2,4 RAA
     """
     assert _map_is_valid(text) == [True, True, True, True, False]
 
@@ -920,9 +920,9 @@ def test_reductio_ad_absurdum_rule():
     text: str = """
         1   1 P>(~P) P
         2   2 P      P
-        1,2 3 ~P     MP 1,2
-        1,2 4 P&(~P) &I 2,3
-        1   5 ~P     RAA 2,4
+        1,2 3 ~P     1,2 MP
+        1,2 4 P&(~P) 2,3 &I
+        1   5 ~P     2,4 RAA
     """
     assert _map_is_valid(text) == [True, True, True, True, False]
 
@@ -930,7 +930,7 @@ def test_reductio_ad_absurdum_rule():
     text: str = """
         1 1 Q      A
         2 2 P&(~P) P
-        2 3 ~Q     RAA 1,2
+        2 3 ~Q     1,2 RAA
     """
     assert _map_is_valid(text) == [True, True, False]
 
@@ -938,9 +938,9 @@ def test_reductio_ad_absurdum_rule():
     text: str = """
         1   1 P>(~P) P
         2   2 P      A
-        1,2 3 ~P     MP 1,2
-        1,2 4 Pv(~P) vI 3
-        1   5 ~P     RAA 2,4
+        1,2 3 ~P     1,2 MP
+        1,2 4 Pv(~P) 3 vI
+        1   5 ~P     2,4 RAA
     """
     assert _map_is_valid(text) == [True, True, True, True, False]
 
@@ -948,9 +948,9 @@ def test_reductio_ad_absurdum_rule():
     text: str = """
         1   1 P>(~P) P
         2   2 P      A
-        1,2 3 ~P     MP 1,2
-        1,2 4 (~P)&P &I 3,2
-        1   5 ~P     RAA 2,4
+        1,2 3 ~P     1,2 MP
+        1,2 4 (~P)&P 3,2 &I
+        1   5 ~P     2,4 RAA
     """
     assert _map_is_valid(text) == [True, True, True, True, False]
 
@@ -958,9 +958,9 @@ def test_reductio_ad_absurdum_rule():
     text: str = """
         1   1 P>(~P)    P
         2   2 P         A
-        1,2 3 ~P        MP 1,2
-        1,2 4 (~P)&(~P) &I 3,3
-        1   5 ~P        RAA 2,4
+        1,2 3 ~P        1,2 MP
+        1,2 4 (~P)&(~P) 3,3 &I
+        1   5 ~P        2,4 RAA
     """
     assert _map_is_valid(text) == [True, True, True, True, False]
 
@@ -968,9 +968,9 @@ def test_reductio_ad_absurdum_rule():
     text: str = """
         1   1 P>(~P) P
         2   2 P      A
-        1,2 3 ~P     MP 1,2
-        1,2 4 P&(~P) &I 2,3
-        1   5 P      RAA 2,4
+        1,2 3 ~P     1,2 MP
+        1,2 4 P&(~P) 2,3 &I
+        1   5 P      2,4 RAA
     """
     assert _map_is_valid(text) == [True, True, True, True, False]
 
@@ -978,8 +978,8 @@ def test_reductio_ad_absurdum_rule():
     text: str = """
         1   1 P>(~P) P
         2   2 P      A
-        1,2 3 ~P     MP 1,2
-        1,2 4 P&(~P) &I 2,3
-        1   5 ~Q     RAA 2,4
+        1,2 3 ~P     1,2 MP
+        1,2 4 P&(~P) 2,3 &I
+        1   5 ~Q     2,4 RAA
     """
     assert _map_is_valid(text) == [True, True, True, True, False]

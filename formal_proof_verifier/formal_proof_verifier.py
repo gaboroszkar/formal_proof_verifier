@@ -969,8 +969,8 @@ def create_lines(lines_str: List[str]) -> List[Tuple[str, Line]]:
             dependencies_str: List[str] = line_str[0].split(",")
             line_number_str: str = line_str[1]
             formula_str: str = line_str[2]
-            rule_symbol: str = line_str[3]
-            rule_lines_str: List[str] = line_str[4].split(",") if len(line_str) == 5 else []
+            rule_symbol: str = line_str[4] if len(line_str) == 5 else line_str[3]
+            rule_lines_str: List[str] = line_str[3].split(",") if len(line_str) == 5 else []
 
             empty_dependency: str = "-"
 
