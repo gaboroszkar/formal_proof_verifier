@@ -795,6 +795,9 @@ class RAARule(Rule):
         if not self._lines[0].is_assumption():
             return False
 
+        if self._lines[0] not in self._lines[1].dependencies:
+            return False
+
         if self._lines[1].formula.type != FormulaType.and_type:
             return False
 
