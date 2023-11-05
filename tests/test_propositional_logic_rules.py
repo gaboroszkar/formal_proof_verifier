@@ -724,7 +724,6 @@ def test_double_negation_elimination_rule():
     with pytest.raises(RuntimeError):
         create_lines_from_text(text)
 
-
     # Missing dependency number.
     text: str = """
         1 1 ~(~((P&Q)v(R>S))) P
@@ -761,3 +760,79 @@ def test_double_negation_elimination_rule():
         1 2 (P&P)v(R>S)       DNE 1
     """
     assert _map_is_valid(text) == [True, False]
+
+def test_modus_tollens_rule():
+    # Valid use of the rule.
+    text: str = """
+        1   1 P>Q P
+        2   2 ~Q  P
+        1,2 3 ~P  MT 1,2
+    """
+    assert _map_is_valid(text) == [True, True, True]
+
+    # Valid use of the rule.
+    text: str = """
+        1   1 (P&Q)>(R&S) P
+        2   2 ~(R&S)      P
+        1,2 3 ~(P&Q)      MT 1,2
+    """
+    assert _map_is_valid(text) == [True, True, True]
+
+    # Missing line numbers for the rule.
+    text: str = """
+        1   1 P>Q P
+        2   2 ~Q  P
+        1,2 3 ~P  MT 1
+    """
+    with pytest.raises(RuntimeError):
+        create_lines_from_text(text)
+
+    # Too many line numbers for the rule.
+    text: str = """
+        1   1 P>Q P
+        2   2 ~Q  P
+        3   3 ~Q  P
+        1,2 3 ~P  MT 1,2,3
+    """
+    with pytest.raises(RuntimeError):
+        create_lines_from_text(text)
+
+    # Incorrect connective.
+    text: str = """
+        1   1 (P&Q)&(R&S) P
+        2   2 ~(R&S)      P
+        1,2 3 ~(P&Q)      MT 1,2
+    """
+    assert _map_is_valid(text) == [True, True, False]
+
+    # Second rule line is not negation.
+    text: str = """
+        1   1 (P&Q)>(R&S) P
+        2   2 R&S         P
+        1,2 3 ~(P&Q)      MT 1,2
+    """
+    assert _map_is_valid(text) == [True, True, False]
+
+    # Result is not negation.
+    text: str = """
+        1   1 (P&Q)>(R&S) P
+        2   2 ~(R&S)      P
+        1,2 3 P&Q         MT 1,2
+    """
+    assert _map_is_valid(text) == [True, True, False]
+
+    # Second rule line is not the negation of the consequent.
+    text: str = """
+        1   1 (P&Q)>(R&S) P
+        2   2 ~(R&R)      P
+        1,2 3 ~(P&Q)      MT 1,2
+    """
+    assert _map_is_valid(text) == [True, True, False]
+
+    # Result is not the negation of the antecedent.
+    text: str = """
+        1   1 (P&Q)>(R&S) P
+        2   2 ~(R&S)      P
+        1,2 3 ~(P&P)      MT 1,2
+    """
+    assert _map_is_valid(text) == [True, True, False]
