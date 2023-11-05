@@ -293,6 +293,13 @@ def test_or_introduction_rule():
     """
     assert _map_is_valid(text) == [True, True, False]
 
+    # Incorrect connective.
+    text: str = """
+        1 1 P   P
+        1 2 P&Q vI 1
+    """
+    assert _map_is_valid(text) == [True, False]
+
     # None of the formulas are the same.
     text: str = """
         1 1 P   P
@@ -300,3 +307,162 @@ def test_or_introduction_rule():
         2 3 PvP vI 2
     """
     assert _map_is_valid(text) == [True, True, False]
+
+def test_or_elimination_rule():
+    # Valid use of the rule.
+    text: str = """
+        1 1 ((P&Q)>R)v((P&Q)>R) P
+        2 2 (P&Q)>R             A
+        1 3 (P&Q)>R             vE 1,2,2,2,2
+    """
+    assert _map_is_valid(text) == [True, True, True]
+
+    # Valid use of the rule.
+    text: str = """
+        1 1 (P&Q)v(R&P) P
+        2 2 P&Q         A
+        2 3 P           &E 2
+        4 4 R&P         A
+        4 5 P           &E 4
+        1 6 P           vE 1,2,3,4,5
+    """
+    assert _map_is_valid(text) == [True, True, True, True, True, True]
+
+    # Missing line numbers for the rule.
+    text: str = """
+        1 1 ((P&Q)>R)v((P&Q)>R) P
+        2 2 (P&Q)>R             A
+        1 3 (P&Q)>R             vE 1,2,2,2
+    """
+    with pytest.raises(RuntimeError):
+        create_lines_from_text(text)
+
+    # Too many line numbers for the rule.
+    text: str = """
+        1 1 ((P&Q)>R)v((P&Q)>R) P
+        2 2 (P&Q)>R             A
+        1 3 (P&Q)>R             vE 1,2,2,2,2,2
+    """
+    with pytest.raises(RuntimeError):
+        create_lines_from_text(text)
+
+    # Missing dependency number.
+    text: str = """
+        1 1 (P&Q)v(R&P) P
+        2 2 P&Q         A
+        2 3 P           &E 2
+        4 4 R&P         A
+        4 5 P           &E 4
+        - 6 P           vE 1,2,3,4,5
+    """
+    assert _map_is_valid(text) == [True, True, True, True, True, False]
+
+    # Extra invalid dependency number.
+    text: str = """
+        1   1 (P&Q)v(R&P) P
+        2   2 P&Q         A
+        2   3 P           &E 2
+        4   4 R&P         A
+        4   5 P           &E 4
+        1,2 6 P           vE 1,2,3,4,5
+    """
+    assert _map_is_valid(text) == [True, True, True, True, True, False]
+
+    # Incorrect connective.
+    text: str = """
+        1 1 (P&Q)&(R&P) P
+        2 2 P&Q         A
+        2 3 P           &E 2
+        4 4 R&P         A
+        4 5 P           &E 4
+        1 6 P           vE 1,2,3,4,5
+    """
+    assert _map_is_valid(text) == [True, True, True, True, True, False]
+
+    # Second rule line is not assumption.
+    text: str = """
+        1 1 (P&Q)v(R&P) P
+        2 2 P&Q         P
+        2 3 P           &E 2
+        4 4 R&P         A
+        4 5 P           &E 4
+        1 6 P           vE 1,2,3,4,5
+    """
+    assert _map_is_valid(text) == [True, True, True, True, True, False]
+
+    # First assumption is incorrect.
+    text: str = """
+        1 1 (P&Q)v(R&P) P
+        2 2 P&P         A
+        2 3 P           &E 2
+        4 4 R&P         A
+        4 5 P           &E 4
+        1 6 P           vE 1,2,3,4,5
+    """
+    assert _map_is_valid(text) == [True, True, True, True, True, False]
+
+    # Third rule line does not depend on the first assumption.
+    text: str = """
+        1 1 (P&Q)v(R&P) P
+        2 2 P&Q         A
+        3 3 P           A
+        4 4 R&P         A
+        4 5 P           &E 4
+        1 6 P           vE 1,2,3,4,5
+    """
+    assert _map_is_valid(text) == [True, True, True, True, True, False]
+
+    # Third rule line is not the same as the result.
+    text: str = """
+        1 1 (P&Q)v(R&P) P
+        2 2 P&Q         A
+        2 3 Q           &E 2
+        4 4 R&P         A
+        4 5 P           &E 4
+        1 6 P           vE 1,2,3,4,5
+    """
+    assert _map_is_valid(text) == [True, True, True, True, True, False]
+
+    # Fourth rule line is not assumption.
+    text: str = """
+        1 1 (P&Q)v(R&P) P
+        2 2 P&Q         A
+        2 3 P           &E 2
+        4 4 R&P         P
+        4 5 P           &E 4
+        1 6 P           vE 1,2,3,4,5
+    """
+    assert _map_is_valid(text) == [True, True, True, True, True, False]
+
+    # Second assumption is incorrect.
+    text: str = """
+        1 1 (P&Q)v(R&P) P
+        2 2 P&Q         A
+        2 3 P           &E 2
+        4 4 P&P         A
+        4 5 P           &E 4
+        1 6 P           vE 1,2,3,4,5
+    """
+    assert _map_is_valid(text) == [True, True, True, True, True, False]
+
+    # Fourth rule line does not depend on the first assumption.
+    text: str = """
+        1 1 (P&Q)v(R&P) P
+        2 2 P&Q         A
+        2 3 P           &E 2
+        4 4 R&P         A
+        5 5 P           A
+        1 6 P           vE 1,2,3,4,5
+    """
+    assert _map_is_valid(text) == [True, True, True, True, True, False]
+
+    # Fourth rule line is not the same as the result.
+    text: str = """
+        1 1 (P&Q)v(R&P) P
+        2 2 P&Q         A
+        2 3 Q           &E 2
+        4 4 R&P         A
+        4 5 R           &E 4
+        1 6 P           vE 1,2,3,4,5
+    """
+    assert _map_is_valid(text) == [True, True, True, True, True, False]
