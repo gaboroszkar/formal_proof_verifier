@@ -15,10 +15,6 @@ class FormulaType(Enum):
     universal_type = 7
     existential_type = 8
 
-class StrRef:
-    def __init__(self, s: Optional[str] = None):
-        self.s = s
-
 class Formula:
     def __init__(
         self,
