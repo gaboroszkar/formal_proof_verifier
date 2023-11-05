@@ -165,3 +165,64 @@ def test_and_elimination_rule():
         1,2 4 P&P         &E 3
     """
     assert _map_is_valid(text) == [True, True, True, False]
+
+def test_or_introduction_rule():
+    # Valid use of the rule.
+    text: str = """
+        1 1 P       P
+        1 2 PvQ     vI 1
+        1 3 Rv(PvQ) vI 2
+    """
+    assert _map_is_valid(text) == [True, True, True]
+
+    # Valid use of the rule.
+    text: str = """
+        1   1 P       P
+        2   2 Q       P
+        1,2 3 P&Q     &I 1,2
+        1,2 4 Rv(P&Q) vI 3
+    """
+    assert _map_is_valid(text) == [True, True, True, True]
+
+    # Missing line numbers for the rule.
+    text: str = """
+        1 1 P   P
+        2 2 Q   P
+        1 2 PvQ vI
+    """
+    with pytest.raises(RuntimeError):
+        create_lines_from_text(text)
+
+    # Too many line numbers for the rule.
+    text: str = """
+        1 1 P       P
+        1 2 PvQ     vI 1
+        1 3 Rv(PvQ) vI 1,2
+    """
+    with pytest.raises(RuntimeError):
+        create_lines_from_text(text)
+
+    # Missing dependency number.
+    text: str = """
+        1   1 P       P
+        2   2 Q       P
+        1,2 3 P&Q     &I 1,2
+        2   4 Rv(P&Q) vI 3
+    """
+    assert _map_is_valid(text) == [True, True, True, False]
+
+    # Extra invalid dependency number.
+    text: str = """
+        1   1 P   P
+        2   2 Q   P
+        1,2 3 PvQ vI 1
+    """
+    assert _map_is_valid(text) == [True, True, False]
+
+    # None of the formulas are the same.
+    text: str = """
+        1 1 P   P
+        2 2 Q   P
+        2 3 PvP vI 2
+    """
+    assert _map_is_valid(text) == [True, True, False]
