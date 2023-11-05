@@ -836,3 +836,133 @@ def test_modus_tollens_rule():
         1,2 3 ~(P&P)      MT 1,2
     """
     assert _map_is_valid(text) == [True, True, False]
+
+def test_reductio_ad_absurdum_rule():
+    # Valid use of the rule.
+    text: str = """
+        1 1 P&(~P)    A
+        - 2 ~(P&(~P)) RAA 1,1
+    """
+    assert _map_is_valid(text) == [True, True]
+
+    # Valid use of the rule.
+    text: str = """
+        1   1 P>(~P) P
+        2   2 P      A
+        1,2 3 ~P     MP 1,2
+        1,2 4 P&(~P) &I 2,3
+        1   5 ~P     RAA 2,4
+    """
+    assert _map_is_valid(text) == [True, True, True, True, True]
+
+    # Valid use of the rule.
+    text: str = """
+        1   1 (P&Q)>(R&S) P
+        2   2 ~(R&S)      P
+        1,2 3 ~(P&Q)      MT 1,2
+    """
+    assert _map_is_valid(text) == [True, True, True]
+
+    # Missing line numbers for the rule.
+    text: str = """
+        1 1 P&(~P)    A
+        - 2 ~(P&(~P)) RAA 1
+    """
+    with pytest.raises(RuntimeError):
+        create_lines_from_text(text)
+
+    # Too many line numbers for the rule.
+    text: str = """
+        1 1 P&(~P)    A
+        - 2 ~(P&(~P)) RAA 1,1,1
+    """
+    with pytest.raises(RuntimeError):
+        create_lines_from_text(text)
+
+    # Missing dependency number.
+    text: str = """
+        1   1 P>(~P) P
+        2   2 P      A
+        1,2 3 ~P     MP 1,2
+        1,2 4 P&(~P) &I 2,3
+        -   5 ~P     RAA 2,4
+    """
+    assert _map_is_valid(text) == [True, True, True, True, False]
+
+    # Missing dependency number.
+    text: str = """
+        1   1 P>(~P) P
+        2   2 P      A
+        1,2 3 ~P     MP 1,2
+        1,2 4 P&(~P) &I 2,3
+        1,2 5 ~P     RAA 2,4
+    """
+    assert _map_is_valid(text) == [True, True, True, True, False]
+
+    # First rule line is not assumption.
+    text: str = """
+        1   1 P>(~P) P
+        2   2 P      P
+        1,2 3 ~P     MP 1,2
+        1,2 4 P&(~P) &I 2,3
+        1   5 ~P     RAA 2,4
+    """
+    assert _map_is_valid(text) == [True, True, True, True, False]
+
+    # Contradiction does not depend on the assumption.
+    text: str = """
+        1 1 Q      A
+        2 2 P&(~P) P
+        2 3 ~Q     RAA 1,2
+    """
+    assert _map_is_valid(text) == [True, True, False]
+
+    # Contradiction has incorrect connective.
+    text: str = """
+        1   1 P>(~P) P
+        2   2 P      A
+        1,2 3 ~P     MP 1,2
+        1,2 4 Pv(~P) vI 3
+        1   5 ~P     RAA 2,4
+    """
+    assert _map_is_valid(text) == [True, True, True, True, False]
+
+    # Contradiction is not in the correct format.
+    text: str = """
+        1   1 P>(~P) P
+        2   2 P      A
+        1,2 3 ~P     MP 1,2
+        1,2 4 (~P)&P &I 3,2
+        1   5 ~P     RAA 2,4
+    """
+    assert _map_is_valid(text) == [True, True, True, True, False]
+
+    # Contradiction is not in the correct format.
+    text: str = """
+        1   1 P>(~P)    P
+        2   2 P         A
+        1,2 3 ~P        MP 1,2
+        1,2 4 (~P)&(~P) &I 3,3
+        1   5 ~P        RAA 2,4
+    """
+    assert _map_is_valid(text) == [True, True, True, True, False]
+
+    # Result is not a negation.
+    text: str = """
+        1   1 P>(~P) P
+        2   2 P      A
+        1,2 3 ~P     MP 1,2
+        1,2 4 P&(~P) &I 2,3
+        1   5 P      RAA 2,4
+    """
+    assert _map_is_valid(text) == [True, True, True, True, False]
+
+    # Result is not the negation of the assumption.
+    text: str = """
+        1   1 P>(~P) P
+        2   2 P      A
+        1,2 3 ~P     MP 1,2
+        1,2 4 P&(~P) &I 2,3
+        1   5 ~Q     RAA 2,4
+    """
+    assert _map_is_valid(text) == [True, True, True, True, False]
