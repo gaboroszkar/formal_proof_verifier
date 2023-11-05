@@ -488,83 +488,83 @@ def test_conditional_proof_rule():
 
     # Missing line numbers for the rule.
     text: str = """
-        1   1 P       P
-        2   2 Q       A
-        1,2 3 P&Q     &I 1,2
-        1,2 4 P       &E 3
-        1   5 Q>P     CP 2
+        1   1 P   P
+        2   2 Q   A
+        1,2 3 P&Q &I 1,2
+        1,2 4 P   &E 3
+        1   5 Q>P CP 2
     """
     with pytest.raises(RuntimeError):
         create_lines_from_text(text)
 
     # Too many line numbers for the rule.
     text: str = """
-        1   1 P       P
-        2   2 Q       A
-        1,2 3 P&Q     &I 1,2
-        1,2 4 P       &E 3
-        1   5 Q>P     CP 2,3,4
+        1   1 P   P
+        2   2 Q   A
+        1,2 3 P&Q &I 1,2
+        1,2 4 P   &E 3
+        1   5 Q>P CP 2,3,4
     """
     with pytest.raises(RuntimeError):
         create_lines_from_text(text)
 
     # Not discharging the premise dependency.
     text: str = """
-        1   1 P       P
-        2   2 Q       A
-        1,2 3 P&Q     &I 1,2
-        1,2 4 P       &E 3
-        1,2 5 Q>P     CP 2,4
+        1   1 P   P
+        2   2 Q   A
+        1,2 3 P&Q &I 1,2
+        1,2 4 P   &E 3
+        1,2 5 Q>P CP 2,4
     """
     assert _map_is_valid(text) == [True, True, True, True, False]
 
     # Incorrect connective.
     text: str = """
-        1   1 P       P
-        2   2 Q       A
-        1,2 3 P&Q     &I 1,2
-        1,2 4 P       &E 3
-        1   5 Q&P     CP 2,4
+        1   1 P   P
+        2   2 Q   A
+        1,2 3 P&Q &I 1,2
+        1,2 4 P   &E 3
+        1   5 Q&P CP 2,4
     """
     assert _map_is_valid(text) == [True, True, True, True, False]
 
     # Antecedent is not an assumption.
     text: str = """
-        1   1 P       P
-        2   2 Q       P
-        1,2 3 P&Q     &I 1,2
-        1,2 4 P       &E 3
-        1   5 Q>P     CP 2,4
+        1   1 P   P
+        2   2 Q   P
+        1,2 3 P&Q &I 1,2
+        1,2 4 P   &E 3
+        1   5 Q>P CP 2,4
     """
     assert _map_is_valid(text) == [True, True, True, True, False]
 
     # Consequent does not depend on the antecedent.
     text: str = """
-        1   1 P       P
-        2   2 Q       A
-        1,2 3 P&Q     &I 1,2
-        1,2 4 P       &E 3
-        1   5 Q>P     CP 2,1
+        1   1 P   P
+        2   2 Q   A
+        1,2 3 P&Q &I 1,2
+        1,2 4 P   &E 3
+        1   5 Q>P CP 2,1
     """
     assert _map_is_valid(text) == [True, True, True, True, False]
 
     # Antecedent is not the same as the first rule line.
     text: str = """
-        1   1 P       P
-        2   2 Q       A
-        1,2 3 P&Q     &I 1,2
-        1,2 4 P       &E 3
-        1   5 R>P     CP 2,4
+        1   1 P   P
+        2   2 Q   A
+        1,2 3 P&Q &I 1,2
+        1,2 4 P   &E 3
+        1   5 R>P CP 2,4
     """
     assert _map_is_valid(text) == [True, True, True, True, False]
 
     # Consequent is not the same as the second rule line.
     text: str = """
-        1   1 P       P
-        2   2 Q       A
-        1,2 3 P&Q     &I 1,2
-        1,2 4 P       &E 3
-        1   5 Q>R     CP 2,4
+        1   1 P   P
+        2   2 Q   A
+        1,2 3 P&Q &I 1,2
+        1,2 4 P   &E 3
+        1   5 Q>R CP 2,4
     """
     assert _map_is_valid(text) == [True, True, True, True, False]
 
