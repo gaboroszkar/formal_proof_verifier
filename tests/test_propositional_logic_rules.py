@@ -567,3 +567,72 @@ def test_conditional_proof_rule():
         1   5 Q>R     CP 2,4
     """
     assert _map_is_valid(text) == [True, True, True, True, False]
+
+def test_modus_ponens_rule():
+    # Valid use of the rule.
+    text: str = """
+        1   1 P>Q P
+        2   2 P   P
+        1,2 3 Q   MP 1,2
+    """
+    assert _map_is_valid(text) == [True, True, True]
+
+    # Missing line numbers for the rule.
+    text: str = """
+        1   1 P>Q P
+        2   2 P   P
+        1,2 3 Q   MP 1
+    """
+    with pytest.raises(RuntimeError):
+        create_lines_from_text(text)
+
+    # Too many line numbers for the rule.
+    text: str = """
+        1   1 P>Q P
+        2   2 P   P
+        3   3 Q   P
+        1,2 4 Q   MP 1,2,3
+    """
+    with pytest.raises(RuntimeError):
+        create_lines_from_text(text)
+
+    # Missing dependency number.
+    text: str = """
+        1 1 P>Q P
+        2 2 P   P
+        1 3 Q   MP 1,2
+    """
+    assert _map_is_valid(text) == [True, True, False]
+
+    # Extra invalid dependency number.
+    text: str = """
+        1   1 P>Q P
+        2   2 P   P
+        3   3 Q   P
+        1,3 4 Q   MP 1,2
+    """
+    assert _map_is_valid(text) == [True, True, True, False]
+
+    # Incorrect connective.
+    text: str = """
+        1   1 P&Q P
+        2   2 P   P
+        1,2 3 Q   MP 1,2
+    """
+    assert _map_is_valid(text) == [True, True, False]
+
+    # Antecedent is not the same as the first rule line.
+    text: str = """
+        1   1 P>Q P
+        2   2 Q   P
+        1,2 3 Q   MP 1,2
+    """
+    assert _map_is_valid(text) == [True, True, False]
+
+    # Consequent is not the same as the first rule line.
+    text: str = """
+        1   1 P>Q P
+        2   2 P   P
+        1,2 3 P   MP 1,2
+    """
+    assert _map_is_valid(text) == [True, True, False]
