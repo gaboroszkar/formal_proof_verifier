@@ -1,0 +1,9 @@
+# Distribution
+*.egg-info/
+
+# Byte-compiled files
+__pycache__/
+
+# Coverage report
+.coverage
+
