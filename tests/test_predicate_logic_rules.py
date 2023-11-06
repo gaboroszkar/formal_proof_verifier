@@ -22,14 +22,22 @@ def test_universal_introduction_rule():
 
     # Valid use of the rule.
     text: str = """
-        1   1 Ax(F(x)>(Ey(R(x,y))))        P
-        2   2 Ax(G(x))                     P
-        1   3 F(a)>(Ez(R(a,z)))            1 UE
-        2   4 G(a)                         2 UE
-        1,2 5 (F(a)>(Ew(R(a,w))))&G(a)     3,4 &I
-        1,2 6 Ax((F(x)>(Eu(R(x,u))))&G(x)) 5 UI
+        1   1 Ax(Ey(F(y)))>G(x)        P
+        2   2 Ax(H(x))                 P
+        1   3 (Ez(F(z)))>G(a)          1 UE
+        2   4 H(a)                     2 UE
+        1,2 5 ((Ez(F(z)))>G(a))&H(a)   3,4 &I
+        1,2 6 Ax((Ew(F(w)))>G(x))&H(x) 5 UI
     """
     assert map_is_valid(text) == [True, True, True, True, True, True]
+
+    # Valid use of the rule.
+    text: str = """
+        1 1 Ax~(Ey(R(x,y))) P
+        1 2 ~(Ey(R(a,y)))   1 UE
+        1 3 Ax~(Ey(R(x,y))) 2 UI
+    """
+    assert map_is_valid(text) == [True, True, True]
 
     # Missing line numbers for the rule.
     text: str = """
@@ -113,5 +121,14 @@ def test_universal_introduction_rule():
         1 1 Ax(F(x)) P
         1 2 F(a)     1 UE
         1 3 Ax(G(x)) 2 UI
+    """
+    assert map_is_valid(text) == [True, True, False]
+
+    # Cannot find corresponding variable because
+    # the predicate has different number of variables.
+    text: str = """
+        1 1 Ax(P&F(x,y))   P
+        1 2 P&F(a,y)       1 UE
+        1 3 Ax(P&F(a,y,z)) 2 UI
     """
     assert map_is_valid(text) == [True, True, False]
