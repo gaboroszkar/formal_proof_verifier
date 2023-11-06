@@ -22,12 +22,12 @@ def test_universal_introduction_rule():
 
     # Valid use of the rule.
     text: str = """
-        1   1 Ax(F(x))      P
-        2   2 Ax(G(x))      P
-        1   3 F(a)          1 UE
-        2   4 G(a)          2 UE
-        1,2 5 F(a)&G(a)     3,4 &I
-        1,2 6 Ax(F(x)&G(x)) 5 UI
+        1   1 Ax(F(x)>(Ey(R(x,y))))        P
+        2   2 Ax(G(x))                     P
+        1   3 F(a)>(Ez(R(a,z)))            1 UE
+        2   4 G(a)                         2 UE
+        1,2 5 (F(a)>(Ew(R(a,w))))&G(a)     3,4 &I
+        1,2 6 Ax((F(x)>(Eu(R(x,u))))&G(x)) 5 UI
     """
     assert map_is_valid(text) == [True, True, True, True, True, True]
 
