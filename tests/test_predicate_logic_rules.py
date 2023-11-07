@@ -186,3 +186,35 @@ def test_universal_introduction_rule():
         1 3 Ax(P&F(a,y,z)) 2 UI
     """
     assert map_is_valid(text) == [True, True, False]
+
+def test_universal_elimination_rule():
+    # Valid use of the rule.
+    text: str = """
+        1 1 Ax(F(x)) P
+        1 2 F(a)     1 UE
+    """
+    assert map_is_valid(text) == [True, True]
+
+    # Valid use of the rule.
+    text: str = """
+        1 1 Ax(~(Ey(R(x,y))))&F(x) P
+        1 2 (~(Ey(R(a,y))))&F(a)   1 UE
+    """
+    assert map_is_valid(text) == [True, True]
+
+    # Missing line numbers for the rule.
+    text: str = """
+        1 1 Ax(P) P
+        1 2 P     UE
+    """
+    with pytest.raises(RuntimeError):
+        create_lines_from_text(text)
+
+    # Too many line numbers for the rule.
+    text: str = """
+        1 1 Ax(P) P
+        2 2 Ax(Q) P
+        1 3 P     1,2 UE
+    """
+    with pytest.raises(RuntimeError):
+        create_lines_from_text(text)
