@@ -96,7 +96,25 @@ def test_universal_introduction_rule():
     """
     assert map_is_valid(text) == [True, False]
 
-    # Variable exists freely among the dependencies.
+    # Variable exists freely among the dependencies in the left formula.
+    text: str = """
+        1 1 Ax(F(a)&G(x)) P
+        1 2 F(a)&G(b)     1 UE
+        1 3 F(a)          2 &E
+        1 4 Ax(F(x))      3 UI
+    """
+    assert map_is_valid(text) == [True, True, True, False]
+
+    # Variable exists freely among the dependencies in the right formula.
+    text: str = """
+        1 1 Ax(F(x)&G(a)) P
+        1 2 F(b)&G(a)     1 UE
+        1 3 G(a)          2 &E
+        1 4 Ax(G(x))      3 UI
+    """
+    assert map_is_valid(text) == [True, True, True, False]
+
+    # Variable exists freely among the dependencies in the inner formula.
     text: str = """
         1   1 Ax(F(a))      P
         2   2 Ax(G(x))      P
@@ -107,6 +125,15 @@ def test_universal_introduction_rule():
     """
     assert map_is_valid(text) == [True, True, True, True, True, False]
 
+    # Variable exists among the dependencies in the inner formula.
+    text: str = """
+        1 1 Ax(Ay(F(x))) P
+        1 2 Az(F(z))     1 UE
+        1 3 F(y)         2 UE
+        1 4 Az(F(z))     3 UI
+    """
+    assert map_is_valid(text) == [True, True, True, False]
+
     # Formula from which we generalize is very similar,
     # there is a corresponding variable because of this similarity,
     # but the formulas are not exactly the same.
@@ -116,6 +143,40 @@ def test_universal_introduction_rule():
         1 3 Ax(G(x)) 2 UI
     """
     assert map_is_valid(text) == [True, True, False]
+
+    # Formula from which we generalize is very similar,
+    # there is a corresponding variable because of this similarity,
+    # but the formulas are not exactly the same.
+    text: str = """
+        1 1 Ax(F(x)&(Ey(G(y)))) P
+        1 2 F(a)&(Ey(G(y)))     1 UE
+        1 3 Ax(F(x)&(Ay(G(y)))) 2 UI
+    """
+    assert map_is_valid(text) == [True, True, False]
+
+    # Formula from which we generalize is very similar,
+    # there is a corresponding variable because of this similarity,
+    # but the formulas are not exactly the same.
+    text: str = """
+        1 1 Ax(F(x,b)) P
+        1 2 F(a,b)     1 UE
+        1 3 Ax(F(x,c)) 2 UI
+    """
+    assert map_is_valid(text) == [True, True, False]
+
+    # Formula from which we generalize is very similar,
+    # there is a corresponding variable because of this similarity,
+    # but the formulas are not exactly the same.
+    text: str = """
+        1 1 Ax(F(x)&G(x)) P
+        1 2 F(a)&G(a)     1 UE
+        1 3 F(a)          2 &E
+        1 4 F(b)&G(b)     1 UE
+        1 5 G(b)          4 &E
+        1 6 F(a)&G(b)     3,5 &I
+        1 7 Ax(F(x)&G(x)) 6 UI
+    """
+    assert map_is_valid(text) == [True, True, True, True, True, True, False]
 
     # Cannot find corresponding variable because
     # the predicate has different number of variables.
