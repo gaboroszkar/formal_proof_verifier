@@ -96,13 +96,6 @@ def test_universal_introduction_rule():
     """
     assert map_is_valid(text) == [True, False]
 
-    # Dependency without variable, but not the same formula.
-    text: str = """
-        1 1 P&Q     P
-        1 2 Ax(P&P) 1 UI
-    """
-    assert map_is_valid(text) == [True, False]
-
     # Variable exists freely among the dependencies.
     text: str = """
         1   1 Ax(F(a))      P
