@@ -252,6 +252,13 @@ def test_universal_elimination_rule():
     """
     assert map_is_valid(text) == [True, False]
 
+    # Invalid quantifier.
+    text: str = """
+        1 1 Ex(P&F(x)) P
+        1 2 P&F(a)     1 UE
+    """
+    assert map_is_valid(text) == [True, False]
+
     # Formulas are not the same because
     # the bound variables are different.
     text: str = """
