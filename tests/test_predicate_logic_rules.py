@@ -282,3 +282,98 @@ def test_universal_elimination_rule():
         1 2 P&F(a,y)       1 UE
     """
     assert map_is_valid(text) == [True, False]
+
+def test_existential_introduction_rule():
+    # Valid use of the rule.
+    text: str = """
+        1 1 F(a)     P
+        1 2 Ex(F(x)) 1 EI
+    """
+    assert map_is_valid(text) == [True, True]
+
+    # Valid use of the rule.
+    text: str = """
+        1 1 (~(Ey(R(a,y))))&F(a)   P
+        1 2 Ex(~(Ey(R(x,y))))&F(x) 1 EI
+    """
+    assert map_is_valid(text) == [True, True]
+
+    # Valid use of the rule.
+    text: str = """
+        1 1 P&F(a)     P
+        1 2 Ex(P&F(x)) 1 EI
+    """
+    assert map_is_valid(text) == [True, True]
+
+    # Missing line numbers for the rule.
+    text: str = """
+        1 1 P     P
+        1 2 Ex(P) EI
+    """
+    with pytest.raises(RuntimeError):
+        create_lines_from_text(text)
+
+    # Too many line numbers for the rule.
+    text: str = """
+        1 1 P     P
+        2 2 Q     P
+        1 3 Ex(P) 1,2 EI
+    """
+    with pytest.raises(RuntimeError):
+        create_lines_from_text(text)
+
+    # Missing dependency number.
+    text: str = """
+        1   1 P       P
+        2   2 Q       P
+        1,2 3 P&Q     1,2 &I
+        2   4 Ex(P&Q) 3 EI
+    """
+    assert map_is_valid(text) == [True, True, True, False]
+
+    # Extra invalid dependency number.
+    text: str = """
+        1   1 P       P
+        2   2 Q       P
+        1,2 3 Ex(P&Q) 1 EI
+    """
+    assert map_is_valid(text) == [True, True, False]
+
+    # Incorrect quantifier.
+    text: str = """
+        1 1 F(a)     P
+        1 2 Ax(F(x)) 1 EI
+    """
+    assert map_is_valid(text) == [True, False]
+
+    # Formulas are not the same because
+    # the connectives are different.
+    text: str = """
+        1 1 PvF(a,y)     P
+        1 2 Ex(P&F(x,y)) 1 EI
+    """
+    assert map_is_valid(text) == [True, False]
+
+    # Formulas are not the same because
+    # the bound variables are different.
+    text: str = """
+        1 1 Ay(F(a,b))     P
+        1 2 Ex(Ay(F(x,y))) 1 EI
+    """
+    assert map_is_valid(text) == [True, False]
+
+    # Cannot find corresponding variable,
+    # and the formulas are not the same.
+    text: str = """
+        1 1 P&F(c,d)     P
+        1 2 Ex(P&F(a,b)) 1 EI
+    """
+    assert map_is_valid(text) == [True, False]
+
+    # Cannot find corresponding variable because
+    # the predicate has different number of variables.
+    text: str = """
+        1 1 P&F(a,y)       P
+        1 2 Ex(P&F(x,y,z)) 1 EI
+    """
+    assert map_is_valid(text) == [True, False]
