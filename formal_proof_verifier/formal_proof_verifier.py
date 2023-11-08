@@ -907,11 +907,12 @@ class UniversalEliminationRule(Rule):
         corresponding_variable: Optional[str] = (
             inner_formula.find_corresponding_variable(variable, other_formula)
         )
-        variable_map: Dict[str, str] = (
-            {variable: corresponding_variable} if corresponding_variable else {}
-        )
 
-        return inner_formula.eq_with_variable_map(other_formula, variable_map)
+        if corresponding_variable:
+            variable_map: Dict[str, str] = {variable: corresponding_variable}
+            return inner_formula.eq_with_variable_map(other_formula, variable_map)
+        else:
+            return inner_formula == other_formula
 
 class ExistentialIntroductionRule(Rule):
     def _is_valid(
