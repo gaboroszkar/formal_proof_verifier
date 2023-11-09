@@ -978,12 +978,19 @@ class ExistentialEliminationRule(Rule):
         )
 
         if corresponding_variable:
+            variable_map: Dict[str, str] = {variable: corresponding_variable}
+            if not inner_formula.eq_with_variable_map(typical_disjunct_formula, variable_map):
+                return False
+
             if self._lines[2].formula.is_variable_in(corresponding_variable):
                 return False
 
             for dependency in current_line.dependencies:
                 if dependency.formula.is_variable_in(corresponding_variable):
                     return False
+        elif inner_formula != typical_disjunct_formula:
+            return False
+
         if self._lines[2].formula != current_line.formula:
             return False
 
