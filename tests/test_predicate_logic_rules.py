@@ -377,3 +377,200 @@ def test_existential_introduction_rule():
         1 2 Ex(P&F(x,y,z)) 1 EI
     """
     assert map_is_valid(text) == [True, False]
+
+def test_existential_elimination_rule():
+    # Valid use of the rule.
+    text: str = """
+        1 1 Ex(P) P
+        2 2 P     A
+        2 3 PvQ   2 vI
+        1 4 PvQ   1,2,3 EE
+    """
+    assert map_is_valid(text) == [True, True, True, True]
+
+    # Valid use of the rule.
+    text: str = """
+        1 1 Ex(F(x)&G(x)) P
+        2 2 F(a)&G(a)     A
+        2 3 F(a)          2 &E
+        2 4 Ex(F(x))      3 EI
+        1 5 Ex(F(x))      1,2,4 EE
+    """
+    assert map_is_valid(text) == [True, True, True, True, True]
+
+    # Valid use of the rule.
+    text: str = """
+        1 1 Ex(Ay(R(y))&(~G(x))) P
+        2 2 Ay(R(y))&(~G(a))     A
+        2 3 R(y)&(~G(a))         2 UE
+        2 4 ~G(a)                  3 &E
+        2 5 Ex(~G(x))              4 EI
+        1 6 Ex(~G(x))              1,2,5 EE
+    """
+    assert map_is_valid(text) == [True, True, True, True, True, True]
+
+    # Valid use of the rule.
+    text: str = """
+        1    1 Ex(F(x)&G(x))        P
+        2    2 Ax(F(x)>(G(x)>H(x))) P
+        3    3 F(a)&G(a)            A
+        3    4 F(a)                 3 &E
+        3    5 G(a)                 3 &E
+        2    6 F(a)>(G(a)>H(a))     2 UE
+        2,3  7 G(a)>H(a)            6,4 MP
+        2,3  8 H(a)                 7,5 MP
+        2,3  9 Ex(H(x))             8 EI
+        1,2 10 Ex(H(x))             1,3,9 EE
+    """
+    assert map_is_valid(text) == [True, True, True, True, True, True, True, True, True, True]
+
+    # Missing line numbers for the rule.
+    text: str = """
+        1 1 Ex(P) P
+        2 2 P     A
+        2 3 PvQ   2 vI
+        1 4 PvQ   2,3 EE
+    """
+    with pytest.raises(RuntimeError):
+        create_lines_from_text(text)
+
+    # Too many line numbers for the rule.
+    text: str = """
+        1 1 Ex(P)   P
+        2 2 P       A
+        2 3 PvQ     2 vI
+        2 4 (PvQ)vR 3 vI
+        1 5 (PvQ)vR 1,2,3,4 EE
+    """
+    with pytest.raises(RuntimeError):
+        create_lines_from_text(text)
+
+    # Missing dependency number.
+    text: str = """
+        1 1 Ex(P) P
+        2 2 P     A
+        2 3 PvQ   2 vI
+        - 4 PvQ   1,2,3 EE
+    """
+    assert map_is_valid(text) == [True, True, True, False]
+
+    # Extra invalid dependency number.
+    text: str = """
+        1   1 Ex(P) P
+        2   2 P     A
+        2   3 PvQ   2 vI
+        1,2 4 PvQ   1,2,3 EE
+    """
+    assert map_is_valid(text) == [True, True, True, False]
+
+    # Incorrect quantifier.
+    text: str = """
+        1 1 Ax(P) P
+        2 2 P     A
+        2 3 PvQ   2 vI
+        1 4 PvQ   1,2,3 EE
+    """
+    assert map_is_valid(text) == [True, True, True, False]
+
+    # Second rule line is not an assumption.
+    text: str = """
+        1 1 Ex(P) P
+        2 2 P     P
+        2 3 PvQ   2 vI
+        1 4 PvQ   1,2,3 EE
+    """
+    assert map_is_valid(text) == [True, True, True, False]
+
+    # There is no corresponding variable,
+    # and the existential formula and
+    # the typical disjunct is not the same.
+    text: str = """
+        1 1 Ex(P) P
+        2 2 Q     A
+        2 3 PvQ   2 vI
+        1 4 PvQ   1,2,3 EE
+    """
+    assert map_is_valid(text) == [True, True, True, False]
+
+    # There is no corresponding variable because
+    # the number of variables in the predicate is different,
+    # and the existential formula and
+    # the typical disjunct is not the same.
+    text: str = """
+        1 1 Ex(F(x,y,z)) P
+        2 2 F(a,y)     A
+        2 3 Ex(F(x,y)) 2 EI
+        1 4 Ex(F(x,y)) 1,2,3 EE
+    """
+    assert map_is_valid(text) == [True, True, True, False]
+
+    # There is no corresponding variable,
+    # the existential formula and
+    # the typical disjunct is not the same
+    # because the free variables are different.
+    text: str = """
+        1 1 Ex(F(d,b,c)) P
+        2 2 F(a,b,c)     A
+        2 3 Ex(F(a,b,c)) 2 EI
+        1 4 Ex(F(a,b,c)) 1,2,3 EE
+    """
+    assert map_is_valid(text) == [True, True, True, False]
+
+    # There is no corresponding variable,
+    # the existential formula and
+    # the typical disjunct is not the same
+    # because the bound variables are different.
+    text: str = """
+        1 1 Ex(Ey(R(a,y))) P
+        2 2 Ey(R(a,b))     A
+        2 3 Ex(Ey(R(a,b))) 2 EI
+        1 4 Ex(Ey(R(a,b))) 1,2,3 EE
+    """
+    assert map_is_valid(text) == [True, True, True, False]
+
+    # The derived formula from the assumption,
+    # and the result is not the same because the
+    # connectives are different.
+    text: str = """
+        1 1 Ex(P) P
+        2 2 P     A
+        2 3 PvQ   2 vI
+        1 4 P&Q   1,2,3 EE
+    """
+    assert map_is_valid(text) == [True, True, True, False]
+
+    # The derived formula from the assumption,
+    # and the result is not the same because the
+    # number of variables in the predicates are different.
+    text: str = """
+        1 1 Ex(F(x,b))   P
+        2 2 F(a,b)       A
+        2 3 F(a,b)vP     2 vI
+        2 4 Ex(F(x,b)vP) 3 EI
+        1 5 Ex(F(x)vP)   1,2,4 EE
+    """
+    assert map_is_valid(text) == [True, True, True, True, False]
+
+    # The derived formula from the assumption,
+    # and the result is not the same because the
+    # free variables are different.
+    text: str = """
+        1 1 Ex(F(x,b,c)) P
+        2 2 F(a,b,c)     A
+        2 3 Ex(F(x,b,c)) 2 EI
+        1 4 Ex(F(x,b,d)) 1,2,3 EE
+    """
+    assert map_is_valid(text) == [True, True, True, False]
+
+    # The derived formula from the assumption,
+    # and the result is not the same because the
+    # bound variables are different.
+    text: str = """
+        1 1 Ex(F(x,b))     P
+        2 2 F(a,b)         A
+        2 3 Ey(F(a,y))     2 EI
+        2 4 Ex(Ey(F(x,y))) 3 EI
+        1 5 Ex(Ey(F(x,b))) 1,2,4 EE
+    """
+    assert map_is_valid(text) == [True, True, True, True, False]
+
