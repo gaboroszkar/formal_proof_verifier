@@ -1,25 +1,23 @@
-from typing import List, Self
+from typing import List, Self, Optional
 from abc import ABC, abstractmethod
-
-def append_all_subclasses(cls, subclasses: list) -> None:
-    for subclass in cls.__subclasses__():
-        subclasses.append(subclass)
-        append_all_subclasses(subclass, subclasses)
-def subclasses(cls) -> list:
-    result = []
-    append_all_subclasses(cls, result)
-    return result
 
 class Rule(ABC):
     @staticmethod
-    def create(symbol: str, lines: list) -> Self:
-        symbol_to_cls: dict = {}
-        for sub_cls in subclasses(Rule):
-            symbol_to_cls[sub_cls.symbol()] = (sub_cls, sub_cls.number_of_lines())
+    def _find_subclass(symbol: str, cls) -> Optional[Self]:
+        for subclass in cls.__subclasses__():
+            if subclass.symbol() == symbol:
+                return subclass
+            elif (found_subclass := Rule._find_subclass(symbol, subclass)) is not None:
+                return found_subclass
+        return None
 
-        if symbol not in symbol_to_cls:
+    @staticmethod
+    def create(symbol: str, lines: list) -> Self:
+        cls: Optional[Self] = Rule._find_subclass(symbol, Rule)
+
+        if cls is None:
             raise RuntimeError(f"Error: rule '{symbol}' is invalid.")
-        cls, number_of_lines = symbol_to_cls[symbol]
+        number_of_lines = cls.number_of_lines()
         if number_of_lines != len(lines):
             raise RuntimeError(f"Error: rule '{symbol}' has invalid number of line numbers.")
 
