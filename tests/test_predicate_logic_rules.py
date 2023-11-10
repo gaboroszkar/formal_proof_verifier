@@ -403,9 +403,9 @@ def test_existential_elimination_rule():
         1 1 Ex(Ay(R(y))&(~G(x))) P
         2 2 Ay(R(y))&(~G(a))     A
         2 3 R(y)&(~G(a))         2 UE
-        2 4 ~G(a)                  3 &E
-        2 5 Ex(~G(x))              4 EI
-        1 6 Ex(~G(x))              1,2,5 EE
+        2 4 ~G(a)                3 &E
+        2 5 Ex(~G(x))            4 EI
+        1 6 Ex(~G(x))            1,2,5 EE
     """
     assert map_is_valid(text) == [True, True, True, True, True, True]
 
@@ -498,9 +498,9 @@ def test_existential_elimination_rule():
     # the typical disjunct is not the same.
     text: str = """
         1 1 Ex(F(x,y,z)) P
-        2 2 F(a,y)     A
-        2 3 Ex(F(x,y)) 2 EI
-        1 4 Ex(F(x,y)) 1,2,3 EE
+        2 2 F(a,y)       A
+        2 3 Ex(F(x,y))   2 EI
+        1 4 Ex(F(x,y))   1,2,3 EE
     """
     assert map_is_valid(text) == [True, True, True, False]
 
@@ -573,4 +573,3 @@ def test_existential_elimination_rule():
         1 5 Ex(Ey(F(x,b))) 1,2,4 EE
     """
     assert map_is_valid(text) == [True, True, True, True, False]
-
