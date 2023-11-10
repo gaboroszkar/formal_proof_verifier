@@ -58,7 +58,7 @@ class Rule(ABC):
         return _all_is_in(set_1, set_2) and _all_is_in(set_2, set_1)
 
     @staticmethod
-    def is_assumption():
+    def is_assumption() -> bool:
         return False
 
     @abstractmethod
@@ -115,7 +115,7 @@ class PremiseRule(Rule):
 
 class AssumptionRule(Rule):
     @staticmethod
-    def is_assumption():
+    def is_assumption() -> bool:
         return True
 
     def _is_valid(
