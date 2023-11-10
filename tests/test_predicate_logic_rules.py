@@ -528,6 +528,54 @@ def test_existential_elimination_rule():
     """
     assert map_is_valid(text) == [True, True, True, False]
 
+    # There is corresponding variable,
+    # and the existential formula and
+    # the typical disjunct is not the same.
+    text: str = """
+        1 1 Ex(F(x,b))   P
+        2 2 G(a,b)       A
+        2 3 G(a,b)vP     2 vI
+        2 4 Ex(G(x,b)vP) 3 EI
+        1 5 Ex(G(x,b)vP) 1,2,4 EE
+    """
+    assert map_is_valid(text) == [True, True, True, True, False]
+
+    # There is corresponding variable because
+    # the number of variables in the predicate is different,
+    # and the existential formula and
+    # the typical disjunct is not the same.
+    text: str = """
+        1 1 Ex(F(x)&G(x))   P
+        2 2 F(a)&G(a,a)     A
+        2 3 Ex(F(x)&G(a,a)) 2 EI
+        1 4 Ex(F(x)&G(x,x)) 1,2,3 EE
+    """
+    assert map_is_valid(text) == [True, True, True, False]
+
+    # There is corresponding variable,
+    # the existential formula and
+    # the typical disjunct is not the same
+    # because the free variables are different.
+    text: str = """
+        1 1 Ex(F(x,y,z)) P
+        2 2 F(a,b,c)     A
+        2 3 Ex(F(a,b,c)) 2 EI
+        1 4 Ex(F(a,b,c)) 1,2,3 EE
+    """
+    assert map_is_valid(text) == [True, True, True, False]
+
+    # There is corresponding variable,
+    # the existential formula and
+    # the typical disjunct is not the same
+    # because the bound variables are different.
+    text: str = """
+        1 1 Ex(Ey(R(x,y))) P
+        2 2 Ey(R(a,b))     A
+        2 3 Ex(Ey(R(a,b))) 2 EI
+        1 4 Ex(Ey(R(x,b))) 1,2,3 EE
+    """
+    assert map_is_valid(text) == [True, True, True, False]
+
     # The derived formula from the assumption,
     # and the result is not the same because the
     # connectives are different.
@@ -573,3 +621,71 @@ def test_existential_elimination_rule():
         1 5 Ex(Ey(F(x,b))) 1,2,4 EE
     """
     assert map_is_valid(text) == [True, True, True, True, False]
+
+    # The corresponding variable is in the conclusion
+    # in the left formula.
+    text: str = """
+        1 1 Ex(Ay(F(x))&G(y)) P
+        2 2 Ay(F(a))&G(y)     A
+        2 3 F(a)&G(a)         2 UE
+        1 4 F(a)&G(a)         1,2,3 EE
+    """
+    assert map_is_valid(text) == [True, True, True, False]
+
+    # The corresponding variable is in the conclusion
+    # in the inner and right formula.
+    text: str = """
+        1 1 Ex(Ay(R(y))&(~G(x))) P
+        2 2 Ay(R(y))&(~G(a))     A
+        2 3 R(y)&(~G(a))         2 UE
+        1 4 R(y)&(~G(a))         1,2,3 EE
+    """
+    assert map_is_valid(text) == [True, True, True, False]
+
+    # The corresponding variable is in the conclusion
+    # as a bound variable.
+    text: str = """
+        1 1 Ex((Ay(P))&F(x)) P
+        2 2 (Aa(P))&F(a)     A
+        1 3 (Aa(P))&F(a)     1,2,2 EE
+    """
+    assert map_is_valid(text) == [True, True, False]
+
+    # The corresponding variable is in the conclusion
+    # in the left formula.
+    text: str = """
+        1   1 Ex(F(a)&G(x))      P
+        2   2 H(a)               P
+        3   3 F(a)&G(a)          A
+        2,3 4 (F(a)&G(a))&H(a)   3,2 &I
+        2,3 5 Ex(F(x)&G(x))&H(x) 4 EI
+        1,2 6 Ex(F(x)&G(x))&H(x) 1,3,5 EE
+    """
+    assert map_is_valid(text) == [True, True, True, True, True, False]
+
+    # The corresponding variable is in the conclusion
+    # in the right and inner formula.
+    text: str = """
+        1     1 Ex(F(x)>P)       P
+        2     2 P>(~G(a)         P
+        3     3 F(a)>P           A
+        4     4 F(a)             A
+        3,4   5 P                3,4 MP
+        2,3,4 6 ~G(a)            2,5 MP
+        2,3   7 F(a)>(~G(a))     4,6 CP
+        2,3   8 Ex(F(x)>(~G(x))) 7 EI
+        1,2   9 Ex(F(x)>(~G(x))) 1,3,8 EE
+    """
+    assert map_is_valid(text) == [True, True, True, True, True, True, True, True, False]
+
+    # The corresponding variable is in the conclusion
+    # as a bound variable.
+    text: str = """
+        1   1 Ex(F(x))         P
+        2   2 Ey(P)            P
+        3   3 F(y)             A
+        2,3 4 F(y)&(Ez(P))     3,2 &I
+        2,3 5 Ex(F(x)&(Ez(P))) 4 EI
+        1,2 6 Ex(F(x)&(Ez(P))) 1,3,5 EE
+    """
+    assert map_is_valid(text) == [True, True, True, True, True, False]
