@@ -1,4 +1,44 @@
+from utils import map_is_valid
 from formal_proof_verifier import create_lines_from_text
+
+def test_invalid_dependency():
+    text: str = """
+        1    1 P&(~P)     A
+        2    2 ~Q         A
+        1    3 P          1 &E
+        1,2  4 P&(~Q)     3,2 &I
+        1,2  5 P          4 &E
+        1    6 Q>(~P)     2,5 CP
+        1    7 ~P         1 &E
+        1    8 ~(~Q)      6,7 MT
+        1    9 Q          8 DNE
+        -   10 (P&(~P))>Q 1,9 CP
+    """
+    assert map_is_valid(text) == [True, True, True, True, True, False, True, False, False, False]
+
+    text: str = """
+        1    1 Ex(F(x)&G(x))        P
+        2    2 Ax(F(x)>(G(x)>H(x))) P
+        3    3 F(a)&G(a)            A
+        3    4 F(a)                 3 &E
+        3    5 G(b)                 3 &E
+        2    6 F(a)>(G(a)>H(a))     2 UE
+        2,3  7 G(a)>H(a)            6,4 MP
+        2,3  8 H(a)                 7,5 MP
+        2,3  9 Ex(H(x))             8 EI
+        1,2 10 Ex(H(x))             1,3,9 EE
+    """
+    assert map_is_valid(text) == [True, True, True, True, False, True, True, False, False, False]
+
+    text: str = """
+        1   1 Ax(Ey(F(y)))>G(x)        P
+        2   2 Ax(H(x))                 P
+        1   3 (Ez(F(z)))>G(a)          1 UE
+        2   4 H(a)                     2 UE
+        1,2 5 ((Ez(F(z)))>G(a))&I(a)   3,4 &I
+        1,2 6 Ax((Ew(F(w)))>G(x))&I(x) 5 UI
+    """
+    assert map_is_valid(text) == [True, True, True, True, False, False]
 
 def test_multiple_reductio_ad_absurdum():
     text: str = """
