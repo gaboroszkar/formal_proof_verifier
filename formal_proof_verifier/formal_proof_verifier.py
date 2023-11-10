@@ -3,27 +3,21 @@ from typing import Dict, Optional, List, Self, Tuple
 from abc import ABC, abstractmethod
 from .formula import Formula, FormulaType, create_formula
 
+def append_all_subclasses(cls, subclasses: list) -> None:
+    for subclass in cls.__subclasses__():
+        subclasses.append(subclass)
+        append_all_subclasses(subclass, subclasses)
+def subclasses(cls) -> list:
+    result = []
+    append_all_subclasses(cls, result)
+    return result
+
 class Rule(ABC):
     @staticmethod
     def create(symbol: str, lines: list) -> Self:
-        symbol_to_cls: dict = {
-            "P": (PremiseRule, 0),
-            "A": (AssumptionRule, 0),
-            "&I": (AndIntroductionRule, 2),
-            "&E": (AndEliminationRule, 1),
-            "vI": (OrIntroductionRule, 1),
-            "vE": (OrEliminationRule, 5),
-            "CP": (CPRule, 2),
-            "MP": (ModusPonensRule, 2),
-            "DNI": (DNIRule, 1),
-            "DNE": (DNERule, 1),
-            "MT": (ModusTollensRule, 2),
-            "RAA": (RAARule, 2),
-            "UI": (UniversalIntroductionRule, 1),
-            "UE": (UniversalEliminationRule, 1),
-            "EI": (ExistentialIntroductionRule, 1),
-            "EE": (ExistentialEliminationRule, 3),
-        }
+        symbol_to_cls: dict = {}
+        for sub_cls in subclasses(Rule):
+            symbol_to_cls[sub_cls.symbol()] = (sub_cls, sub_cls.number_of_lines())
 
         if symbol not in symbol_to_cls:
             raise RuntimeError(f"Error: rule '{symbol}' is invalid.")
@@ -60,6 +54,14 @@ class Rule(ABC):
     @staticmethod
     def is_assumption() -> bool:
         return False
+
+    @staticmethod
+    def symbol() -> str:
+        pass
+
+    @staticmethod
+    def number_of_lines() -> int:
+        pass
 
     @abstractmethod
     def _is_valid(
@@ -113,6 +115,12 @@ class PremiseRule(Rule):
             and next(iter(dependencies)) is current_line
         )
 
+    def symbol() -> str:
+        return "P"
+
+    def number_of_lines() -> int:
+        return 0
+
 class AssumptionRule(Rule):
     @staticmethod
     def is_assumption() -> bool:
@@ -127,6 +135,12 @@ class AssumptionRule(Rule):
             len(dependencies) == 1
             and next(iter(dependencies)) is current_line
         )
+
+    def symbol() -> str:
+        return "A"
+
+    def number_of_lines() -> int:
+        return 0
 
 class AndIntroductionRule(Rule):
     def _is_valid(
@@ -152,6 +166,12 @@ class AndIntroductionRule(Rule):
 
         return True
 
+    def symbol() -> str:
+        return "&I"
+
+    def number_of_lines() -> int:
+        return 2
+
 class AndEliminationRule(Rule):
     def _is_valid(
         self,
@@ -176,6 +196,12 @@ class AndEliminationRule(Rule):
 
         return False
 
+    def symbol() -> str:
+        return "&E"
+
+    def number_of_lines() -> int:
+        return 1
+
 class OrIntroductionRule(Rule):
     def _is_valid(
         self,
@@ -199,6 +225,12 @@ class OrIntroductionRule(Rule):
             return True
 
         return False
+
+    def symbol() -> str:
+        return "vI"
+
+    def number_of_lines() -> int:
+        return 1
 
 class OrEliminationRule(Rule):
     def _is_valid(
@@ -243,6 +275,12 @@ class OrEliminationRule(Rule):
 
         return True
 
+    def symbol() -> str:
+        return "vE"
+
+    def number_of_lines() -> int:
+        return 5
+
 class CPRule(Rule):
     def _is_valid(
         self,
@@ -278,6 +316,12 @@ class CPRule(Rule):
 
         return True
 
+    def symbol() -> str:
+        return "CP"
+
+    def number_of_lines() -> int:
+        return 2
+
 class ModusPonensRule(Rule):
     def _is_valid(
         self,
@@ -301,6 +345,12 @@ class ModusPonensRule(Rule):
             return False
 
         return True
+
+    def symbol() -> str:
+        return "MP"
+
+    def number_of_lines() -> int:
+        return 2
 
 class DNIRule(Rule):
     def _is_valid(
@@ -326,6 +376,12 @@ class DNIRule(Rule):
 
         return True
 
+    def symbol() -> str:
+        return "DNI"
+
+    def number_of_lines() -> int:
+        return 1
+
 class DNERule(Rule):
     def _is_valid(
         self,
@@ -349,6 +405,12 @@ class DNERule(Rule):
             return False
 
         return True
+
+    def symbol() -> str:
+        return "DNE"
+
+    def number_of_lines() -> int:
+        return 1
 
 class ModusTollensRule(Rule):
     def _is_valid(
@@ -379,6 +441,12 @@ class ModusTollensRule(Rule):
             return False
 
         return True
+
+    def symbol() -> str:
+        return "MT"
+
+    def number_of_lines() -> int:
+        return 2
 
 class RAARule(Rule):
     def _is_valid(
@@ -421,6 +489,12 @@ class RAARule(Rule):
 
         return True
 
+    def symbol() -> str:
+        return "RAA"
+
+    def number_of_lines() -> int:
+        return 2
+
 class UniversalIntroductionRule(Rule):
     def _is_valid(
         self,
@@ -456,6 +530,12 @@ class UniversalIntroductionRule(Rule):
         else:
             return inner_formula == other_formula
 
+    def symbol() -> str:
+        return "UI"
+
+    def number_of_lines() -> int:
+        return 1
+
 class UniversalEliminationRule(Rule):
     def _is_valid(
         self,
@@ -486,6 +566,12 @@ class UniversalEliminationRule(Rule):
         else:
             return inner_formula == other_formula
 
+    def symbol() -> str:
+        return "UE"
+
+    def number_of_lines() -> int:
+        return 1
+
 class ExistentialIntroductionRule(Rule):
     def _is_valid(
         self,
@@ -514,6 +600,12 @@ class ExistentialIntroductionRule(Rule):
             return inner_formula.eq_with_variable_map(other_formula, variable_map)
         else:
             return inner_formula == other_formula
+
+    def symbol() -> str:
+        return "EI"
+
+    def number_of_lines() -> int:
+        return 1
 
 class ExistentialEliminationRule(Rule):
     def _is_valid(
@@ -567,6 +659,12 @@ class ExistentialEliminationRule(Rule):
             return False
 
         return True
+
+    def symbol() -> str:
+        return "EE"
+
+    def number_of_lines() -> int:
+        return 3
 
 def create_lines(lines_str: List[str]) -> List[Tuple[str, Line]]:
     lines: Dict[str, Tuple[str, Line]] = {}
