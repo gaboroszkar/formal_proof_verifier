@@ -70,6 +70,9 @@ def test_formula_comparison():
     assert cf("Ax(P&F(a,x))") != cf("Ay(P&F(a,y))")
     assert cf("Ex(F(x,b)vQ)") != cf("Ey(F(y,b)vQ)")
 
+    assert cf("Ax(P&F(a,x))") != cf("Ay(P&F(a,x))")
+    assert cf("Ex(F(x,b)vQ)") != cf("Ey(F(x,b)vQ)")
+
     assert cf("P&Q") != cf("R&Q")
     assert cf("PvQ") != cf("PvR")
     assert cf("~P") != cf("~Q")
