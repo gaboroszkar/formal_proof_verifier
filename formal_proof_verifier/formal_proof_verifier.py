@@ -5,6 +5,7 @@ from .rule import Rule
 from .line import Line
 from .propositional_rules import *
 from .predicate_rules import *
+from .equality_rules import *
 
 def create_lines(lines_str: List[str]) -> List[Tuple[str, Line]]:
     lines: Dict[str, Tuple[str, Line]] = {}
