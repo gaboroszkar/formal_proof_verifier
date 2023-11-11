@@ -89,12 +89,46 @@ def test_universal_introduction_rule():
     """
     assert map_is_valid(text) == [True, True, True, True, True, False]
 
-    # Dependency without variable, but not the same formula.
+    # Dependency without variable, but not the same formula,
+    # because the atoms are different.
     text: str = """
         1 1 P&Q     P
         1 2 Ax(P&P) 1 UI
     """
     assert map_is_valid(text) == [True, False]
+
+    # Dependency without variable, but not the same formula,
+    # because the connectives are different.
+    text: str = """
+        1 1 P&Q     P
+        1 2 Ax(PvQ) 1 UI
+    """
+    assert map_is_valid(text) == [True, False]
+
+    # Dependency without variable, but not the same formula,
+    # because the variables are different.
+    text: str = """
+        1 1 F(a)     P
+        1 2 Ax(F(b)) 1 UI
+    """
+    assert map_is_valid(text) == [True, False]
+
+    # Dependency without variable, but not the same formula,
+    # because the quantifier variable is different.
+    text: str = """
+        1 1 Ex(F(x))     P
+        1 2 Ay(Ez(F(x))) 1 UI
+    """
+    assert map_is_valid(text) == [True, False]
+
+    # Cannot find corresponding variable because
+    # the predicate has different number of variables.
+    text: str = """
+        1 1 Ax(P&F(x,y))   P
+        1 2 P&F(a,y)       1 UE
+        1 3 Ax(P&F(a,y,z)) 2 UI
+    """
+    assert map_is_valid(text) == [True, True, False]
 
     # Variable exists freely among the dependencies in the left formula.
     text: str = """
@@ -178,12 +212,13 @@ def test_universal_introduction_rule():
     """
     assert map_is_valid(text) == [True, True, True, True, True, True, False]
 
-    # Cannot find corresponding variable because
-    # the predicate has different number of variables.
+    # Formula from which we generalize is very similar,
+    # there is a corresponding variable because of this similarity,
+    # but the formulas are not exactly the same.
     text: str = """
-        1 1 Ax(P&F(x,y))   P
-        1 2 P&F(a,y)       1 UE
-        1 3 Ax(P&F(a,y,z)) 2 UI
+        1 1 Ax(F(x)&(Ey(G(y))) P
+        1 2 F(a)&(Ey(G(y))     1 UE
+        1 3 Ax(F(x)&(Ez(G(y))) 2 UI
     """
     assert map_is_valid(text) == [True, True, False]
 
@@ -244,14 +279,6 @@ def test_universal_elimination_rule():
     """
     assert map_is_valid(text) == [True, True, False]
 
-    # Formulas are not the same because
-    # the connectives are different.
-    text: str = """
-        1 1 Ax(P&F(x,y)) P
-        1 2 PvF(a,y)     1 UE
-    """
-    assert map_is_valid(text) == [True, False]
-
     # Invalid quantifier.
     text: str = """
         1 1 Ex(P&F(x)) P
@@ -259,7 +286,17 @@ def test_universal_elimination_rule():
     """
     assert map_is_valid(text) == [True, False]
 
-    # Formulas are not the same because
+    # There is a corresponding variable, but
+    # the formulas are not the same because
+    # the connectives are different.
+    text: str = """
+        1 1 Ax(P&F(x,y)) P
+        1 2 PvF(a,y)     1 UE
+    """
+    assert map_is_valid(text) == [True, False]
+
+    # There is a corresponding variable, but
+    # the formulas are not the same because
     # the bound variables are different.
     text: str = """
         1 1 Ax(Ey(F(x,y))) P
