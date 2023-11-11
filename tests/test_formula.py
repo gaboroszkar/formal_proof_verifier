@@ -55,8 +55,8 @@ def test_formula_comparison():
     assert cf("P>Q") == cf("P>Q")
     assert cf("~P") == cf("~P")
     assert cf("F(a,b,c)") == cf("F(a,b,c)")
-    assert cf("Ax(P&F(a,x))") == cf("Ay(P&F(a,y))")
-    assert cf("Ex(F(x,b)vQ)") == cf("Ey(F(y,b)vQ)")
+    assert cf("Ax(P&F(a,x))") == cf("Ax(P&F(a,x))")
+    assert cf("Ex(F(x,b)vQ)") == cf("Ex(F(x,b)vQ)")
 
     assert cf("P") != cf("Q")
     assert cf("P&Q") != cf("PvQ")
@@ -65,11 +65,11 @@ def test_formula_comparison():
     assert cf("F(a,b,c)") != cf("G(a,b,c)")
     assert cf("F(a,b,c)") != cf("F(a,b)")
     assert cf("F(a,b,c)") != cf("F(a,b,d)")
-    assert cf("Ex(F(x))") != cf("Ay(F(y))")
+    assert cf("Ex(F(x))") != cf("Ax(F(x))")
+
+    assert cf("Ax(P&F(a,x))") != cf("Ay(P&F(a,y))")
+    assert cf("Ex(F(x,b)vQ)") != cf("Ey(F(y,b)vQ)")
 
     assert cf("P&Q") != cf("R&Q")
     assert cf("PvQ") != cf("PvR")
     assert cf("~P") != cf("~Q")
-
-    assert cf("Ax(P&F(a,x))") != cf("Ay(P&F(a,x))")
-    assert cf("Ex(F(x,b)vQ)") != cf("Ey(F(x,b)vQ)")

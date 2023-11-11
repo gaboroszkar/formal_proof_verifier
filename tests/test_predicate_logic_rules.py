@@ -24,10 +24,10 @@ def test_universal_introduction_rule():
     text: str = """
         1   1 Ax(Ey(F(y)))>G(x)        P
         2   2 Ax(H(x))                 P
-        1   3 (Ez(F(z)))>G(a)          1 UE
+        1   3 (Ey(F(y)))>G(a)          1 UE
         2   4 H(a)                     2 UE
-        1,2 5 ((Ez(F(z)))>G(a))&H(a)   3,4 &I
-        1,2 6 Ax((Ew(F(w)))>G(x))&H(x) 5 UI
+        1,2 5 ((Ey(F(y)))>G(a))&H(a)   3,4 &I
+        1,2 6 Ax((Ey(F(y)))>G(x))&H(x) 5 UI
     """
     assert map_is_valid(text) == [True, True, True, True, True, True]
 
@@ -128,9 +128,9 @@ def test_universal_introduction_rule():
     # Variable exists among the dependencies in the inner formula.
     text: str = """
         1 1 Ax(Ay(F(x))) P
-        1 2 Az(F(z))     1 UE
-        1 3 F(y)         2 UE
-        1 4 Az(F(z))     3 UI
+        1 2 Ay(F(x))     1 UE
+        1 3 F(x)         2 UE
+        1 4 Ax(F(x))     3 UI
     """
     assert map_is_valid(text) == [True, True, True, False]
 
@@ -684,8 +684,8 @@ def test_existential_elimination_rule():
         1   1 Ex(F(x))         P
         2   2 Ey(P)            P
         3   3 F(y)             A
-        2,3 4 F(y)&(Ez(P))     3,2 &I
-        2,3 5 Ex(F(x)&(Ez(P))) 4 EI
-        1,2 6 Ex(F(x)&(Ez(P))) 1,3,5 EE
+        2,3 4 F(y)&(Ey(P))     3,2 &I
+        2,3 5 Ex(F(x)&(Ey(P))) 4 EI
+        1,2 6 Ex(F(x)&(Ey(P))) 1,3,5 EE
     """
     assert map_is_valid(text) == [True, True, True, True, True, False]

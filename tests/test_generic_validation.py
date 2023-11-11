@@ -33,10 +33,10 @@ def test_invalid_dependency():
     text: str = """
         1   1 Ax(Ey(F(y)))>G(x)        P
         2   2 Ax(H(x))                 P
-        1   3 (Ez(F(z)))>G(a)          1 UE
+        1   3 (Ey(F(y)))>G(a)          1 UE
         2   4 H(a)                     2 UE
-        1,2 5 ((Ez(F(z)))>G(a))&I(a)   3,4 &I
-        1,2 6 Ax((Ew(F(w)))>G(x))&I(x) 5 UI
+        1,2 5 ((Ey(F(y)))>G(a))&I(a)   3,4 &I
+        1,2 6 Ax((Ey(F(y)))>G(x))&I(x) 5 UI
     """
     assert map_is_valid(text) == [True, True, True, True, False, False]
 

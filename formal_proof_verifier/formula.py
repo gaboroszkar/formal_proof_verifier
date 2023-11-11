@@ -66,12 +66,6 @@ class Formula:
     def variables(self) -> Optional[List[str]]:
         return self._variables
 
-    @property
-    def is_quantified(self) -> bool:
-        return (
-            self.type == FormulaType.universal_type or self.type == FormulaType.existential_type
-        )
-
     @staticmethod
     def _eq_with_variable_map(self, other, variable_map: Dict[str, str]) -> bool:
         if not isinstance(self, Formula) and not isinstance(other, Formula):
@@ -82,19 +76,15 @@ class Formula:
             if self.type != other.type:
                 return False
             else:
-                new_variable_map: Dict[str, str] = copy(variable_map)
-                if self.is_quantified:
-                    assert self.variable not in new_variable_map.keys()
-                    new_variable_map[self.variable] = other.variable
                 if (
-                    Formula._eq_with_variable_map(self.left, other.left, new_variable_map)
-                    and Formula._eq_with_variable_map(self.right, other.right, new_variable_map)
-                    and Formula._eq_with_variable_map(self.inner, other.inner, new_variable_map)
+                    Formula._eq_with_variable_map(self.left, other.left, variable_map)
+                    and Formula._eq_with_variable_map(self.right, other.right, variable_map)
+                    and Formula._eq_with_variable_map(self.inner, other.inner, variable_map)
                     and self.atom == other.atom
                     and self.predicate == other.predicate
                 ):
-                    if self.variable in new_variable_map:
-                        if new_variable_map[self.variable] != other.variable:
+                    if self.variable in variable_map:
+                        if variable_map[self.variable] != other.variable:
                             return False
                     elif self.variable != other.variable:
                         return False
@@ -106,8 +96,8 @@ class Formula:
                             return False
                         else:
                             for v, other_v in zip(self.variables, other.variables):
-                                if v in new_variable_map:
-                                    if new_variable_map[v] != other_v:
+                                if v in variable_map:
+                                    if variable_map[v] != other_v:
                                         return False
                                 elif v != other_v:
                                     return False
