@@ -11,6 +11,10 @@ Formal logic proof verifier.
 * Documentation on how to use it, with examples.
 * Docstring for functions, even to implementation functions.
 * 100 % code coverage with tests.
+* Update tests to make every rule's failing case to test
+  every way they can fail.
+  This means that every line in `Formula.eq_with_variable_map` and
+  `Formula.is_variable_in` is hit for every failing case.
 * Use `elif`s in rules, not just simple `if`s with `return`.
 * Better error messages, with more information.
 * Do not use exceptions, but return with the error.
