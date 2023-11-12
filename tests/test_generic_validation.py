@@ -111,3 +111,36 @@ def test_reductio_ad_absurdum_with_modus_tollens():
     lines: List[Union[str, Line]] = create_lines_from_text(text)
 
     assert all(line[1].is_valid() for line in lines)
+
+def test_only_one_variable_with_property():
+    text: str = """
+        1         1 Ax(Ay((F(x)&F(y))>(x=y)))                    P
+        2         2 ~(Ex(Ay(F(y)>(x=y))))                        A
+        3         3 F(a)                                         A
+        1         4 Ay((F(a)&F(y))>(a=y))                        1 UE
+        1         5 (F(a)&F(b))>(a=b)                            4 UE
+        6         6 F(b)                                         A
+        3,6       7 F(a)&F(b)                                    3,6 &I
+        1,3,6     8 a=b                                          5,7 MP
+        1,3       9 F(b)>(a=b)                                   6,8 CP
+        1,3      10 Ay(F(y)>(a=y))                               9 UI
+        1,3      11 Ex(Ay(F(y)>(x=y)))                           10 EI
+        1,2,3    12 (Ex(Ay(F(y)>(x=y))))&(~(Ex(Ay(F(y)>(x=y))))) 11,2 &I
+        1,2      13 ~F(a)                                        3,12 RAA
+        1,2,3    14 F(a)&(~F(a))                                 3,13 &I
+        15       15 ~(b=a)                                       A
+        1,2,3,15 16 (F(a)&(~F(a)))&(~(b=a))                      14,15 &I
+        1,2,3,15 17 F(a)&(~F(a))                                 16 &E
+        1,2,3    18 ~(~(b=a))                                    15,17 RAA
+        1,2,3    19 b=a                                          18 DNE
+        1,2      20 F(a)>(b=a)                                   3,19 CP
+        1,2      21 Ay(F(y)>(b=y))                               20 UI
+        1,2      22 Ex(Ay(F(y)>(x=y)))                           21 EI
+        1,2      23 (Ex(Ay(F(y)>(x=y))))&(~(Ex(Ay(F(y)>(x=y))))) 22,2 &I
+        1        24 ~(~(Ex(Ay(F(y)>(x=y)))))                     2,23 RAA
+        1        25 Ex(Ay(F(y)>(x=y)))                           24 DNE
+    """
+
+    lines: List[Union[str, Line]] = create_lines_from_text(text)
+
+    assert all(line[1].is_valid() for line in lines)
